@@ -11,5 +11,5 @@ Travis CI    | Linux   | stack | 7.10.3 | 6.29 | [![Un*x build](https://travis-c
              | Linux   | cabal | 7.10.3 |      |
              | macOS   | stack | 7.8.4  |      |
              | macOS   | stack | 8.0.1  |      |
-AppVeyor     | Windows | stack | 8.0.1  |      | [![Windows build](https://ci.appveyor.com/api/projects/status/9gqs37u3h1mlc02b?svg=true)](https://ci.appveyor.com/project/engineerirngirisconnectcouk/regex/branch/master)
+AppVeyor     | Windows | stack | 8.0.1  | 7.18 | [![Windows build](https://ci.appveyor.com/api/projects/status/9gqs37u3h1mlc02b?svg=true)](https://ci.appveyor.com/project/engineerirngirisconnectcouk/regex/branch/master)
 coveralls.io |         |       |        |      | [![Coverage](https://coveralls.io/repos/github/iconnect/regex/badge.svg?branch=master)](https://coveralls.io/github/iconnect/regex?branch=master)

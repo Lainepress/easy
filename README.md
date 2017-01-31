@@ -26,11 +26,11 @@ regex extends regex-base with:
 Schedule
 --------
 
-&nbsp;&nbsp;&#9745;&nbsp;**2017-01-26**&nbsp;&nbsp;0.0.0.1&nbsp;&nbsp;Pre-release (I)<cr/>
-&nbsp;&nbsp;&#9745;&nbsp;**2017-01-30**&nbsp;&nbsp;0.0.0.2&nbsp;&nbsp;Pre-release (II)<cr/>
-&nbsp;&nbsp;&#9744;&nbsp;**2017-02-06**&nbsp;&nbsp;0.0.1.0&nbsp;&nbsp;RFC<cr/>
-&nbsp;&nbsp;&#9744;&nbsp;**2017-02-20**&nbsp;&nbsp;0.1.0.0&nbsp;&nbsp;a candidate stable release<cr/>
-&nbsp;&nbsp;&#9744;&nbsp;**2017-03-20**&nbsp;&nbsp;1.0.0.0&nbsp;&nbsp;first stable release<cr/>
+&nbsp;&nbsp;&#9745;&nbsp;**2017-01-26**&nbsp;&nbsp;0.0.0.1&nbsp;&nbsp;Pre-release (I)<br/>
+&nbsp;&nbsp;&#9745;&nbsp;**2017-01-30**&nbsp;&nbsp;0.0.0.2&nbsp;&nbsp;Pre-release (II)<br/>
+&nbsp;&nbsp;&#9744;&nbsp;**2017-02-06**&nbsp;&nbsp;0.0.1.0&nbsp;&nbsp;RFC<br/>
+&nbsp;&nbsp;&#9744;&nbsp;**2017-02-20**&nbsp;&nbsp;0.1.0.0&nbsp;&nbsp;a candidate stable release<br/>
+&nbsp;&nbsp;&#9744;&nbsp;**2017-03-20**&nbsp;&nbsp;1.0.0.0&nbsp;&nbsp;first stable release<br/>
 
 
 The Web Page
