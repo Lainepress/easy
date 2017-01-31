@@ -1,4 +1,4 @@
-[Build Status](https://iconnect.github.io/regex/build-status) 
+[Build Status](https://iconnect.github.io/regex/build-status)
 [![Hackage](https://img.shields.io/hackage/v/regex.svg)](https://hackage.haskell.org/package/regex)
 [![BSD3 License](http://img.shields.io/badge/license-BSD3-brightgreen.svg)](https://tldrlegal.com/license/bsd-3-clause-license-%28revised%29)
 [![Un*x build](https://img.shields.io/travis/iconnect/regex.svg?label=Linux%2BmacOS)](https://travis-ci.org/iconnect/regex)
@@ -26,11 +26,11 @@ regex extends regex-base with:
 Schedule
 --------
 
-&nbsp;&nbsp;&#9745;&nbsp;**2017-01-26**&nbsp;&nbsp;0.0.0.1&nbsp;&nbsp;Pre-release (I)
-&nbsp;&nbsp;&#9745;&nbsp;**2017-01-30**&nbsp;&nbsp;0.0.0.2&nbsp;&nbsp;Pre-release (II)
-&nbsp;&nbsp;&#9744;&nbsp;**2017-02-06**&nbsp;&nbsp;0.0.1.0&nbsp;&nbsp;RFC
-&nbsp;&nbsp;&#9744;&nbsp;**2017-02-20**&nbsp;&nbsp;0.1.0.0&nbsp;&nbsp;a candidate stable release
-&nbsp;&nbsp;&#9744;&nbsp;**2017-03-20**&nbsp;&nbsp;1.0.0.0&nbsp;&nbsp;first stable release
+&nbsp;&nbsp;&#9745;&nbsp;**2017-01-26**&nbsp;&nbsp;0.0.0.1&nbsp;&nbsp;Pre-release (I)<cr/>
+&nbsp;&nbsp;&#9745;&nbsp;**2017-01-30**&nbsp;&nbsp;0.0.0.2&nbsp;&nbsp;Pre-release (II)<cr/>
+&nbsp;&nbsp;&#9744;&nbsp;**2017-02-06**&nbsp;&nbsp;0.0.1.0&nbsp;&nbsp;RFC<cr/>
+&nbsp;&nbsp;&#9744;&nbsp;**2017-02-20**&nbsp;&nbsp;0.1.0.0&nbsp;&nbsp;a candidate stable release<cr/>
+&nbsp;&nbsp;&#9744;&nbsp;**2017-03-20**&nbsp;&nbsp;1.0.0.0&nbsp;&nbsp;first stable release<cr/>
 
 
 The Web Page
