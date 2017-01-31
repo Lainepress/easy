@@ -1,4 +1,5 @@
-[Build Status](https://iconnect.github.io/regex/build-status)
+**[Build Status](https://iconnect.github.io/regex/build-status)**
+
 [![Hackage](https://img.shields.io/hackage/v/regex.svg)](https://hackage.haskell.org/package/regex)
 [![BSD3 License](http://img.shields.io/badge/license-BSD3-brightgreen.svg)](https://tldrlegal.com/license/bsd-3-clause-license-%28revised%29)
 [![Un*x build](https://img.shields.io/travis/iconnect/regex.svg?label=Linux%2BmacOS)](https://travis-ci.org/iconnect/regex)

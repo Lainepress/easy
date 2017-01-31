@@ -33,7 +33,7 @@ The Builds
 ----------
 
 For details of the current release and the build pipelines used to
-test it see the [Build Status](build-status) page.
+test it see the **[Build Status](build-status)** page.
 
 
 Installation Instructions
