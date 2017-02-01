@@ -418,7 +418,7 @@ badges
 badges :: IO ()
 badges = mapM_ collect
     [ (,) "hackage"         "https://img.shields.io/hackage/v/regex.svg"
-    , (,) "licence"         "https://img.shields.io/badge/license-BSD3-brightgreen.svg"
+    , (,) "license"         "https://img.shields.io/badge/license-BSD3-brightgreen.svg"
     , (,) "unix-build"      "https://img.shields.io/travis/iconnect/regex.svg?label=Linux%2BmacOS"
     , (,) "windows-build"   "https://img.shields.io/appveyor/ci/engineerirngirisconnectcouk/regex.svg?label=Windows"
     , (,) "coverage"        "https://img.shields.io/coveralls/iconnect/regex.svg"

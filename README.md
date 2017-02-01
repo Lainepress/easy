@@ -1,10 +1,10 @@
 **[Build Status](https://iconnect.github.io/regex/build-status)**
 
-[![Hackage](docs/badges/hackage.svg)](https://hackage.haskell.org/package/regex)
-[![BSD3 License](docs/badges/license.svg)](https://tldrlegal.com/license/bsd-3-clause-license-%28revised%29)
-[![Un*x build](docs/badges/unix-build.svg)](https://travis-ci.org/iconnect/regex)
-[![Windows build](docs/badges/windows-build.svg)](https://ci.appveyor.com/project/engineerirngirisconnectcouk/regex/branch/master)
-[![Coverage](docs/badges/coverage.svg)](https://coveralls.io/github/iconnect/regex?branch=master)
+[![Hackage](https://iconnect.github.io/regex/badges/hackage.svg)](https://hackage.haskell.org/package/regex)
+[![BSD3 License](https://iconnect.github.io/regex/badges/license.svg)](https://tldrlegal.com/license/bsd-3-clause-license-%28revised%29)
+[![Un*x build](https://iconnect.github.io/regex/badges/unix-build.svg)](https://travis-ci.org/iconnect/regex)
+[![Windows build](https://iconnect.github.io/regex/badges/windows-build.svg)](https://ci.appveyor.com/project/engineerirngirisconnectcouk/regex/branch/master)
+[![Coverage](https://iconnect.github.io/regex/badges/coverage.svg)](https://coveralls.io/github/iconnect/regex?branch=master)
 
 # regex: A Regular Expression Toolkit for regex-base
 
