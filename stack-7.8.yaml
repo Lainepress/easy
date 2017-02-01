@@ -8,3 +8,4 @@ packages:
 system-ghc: false
 extra-deps:
   - regex-tdfa-text-1.0.0.3
+  - text-1.2.1.3
