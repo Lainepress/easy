@@ -16,7 +16,7 @@ import           Data.IORef
 import           Data.Maybe
 import           Data.Monoid
 import qualified Data.Text                                as T
-import           Network.HTTP.Simple
+import           Network.HTTP.Conduit
 import qualified Shelly                                   as SH
 import           System.Directory
 import           System.Environment
@@ -425,12 +425,7 @@ badges = mapM_ collect
     ]
   where
     collect (nm,url) =
-      wget url >>= LBS.writeFile ("docs/badges/"++nm++".svg")
-
-wget :: String -> IO LBS.ByteString
-wget url = do
-  rq  <- parseRequest url
-  getResponseBody <$> httpLbs rq
+      simpleHttp url >>= LBS.writeFile ("docs/badges/"++nm++".svg")
 \end{code}
 
 

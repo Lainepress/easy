@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-warnings-deprecations #-}
+
 module Text.RE.Parsers
   ( parseInteger
   , parseHex
@@ -23,8 +25,8 @@ module Text.RE.Parsers
 import           Data.Array
 import qualified Data.HashMap.Strict        as HM
 import           Data.Maybe
-import           Data.Time                  hiding (defaultTimeLocale)
-import           Data.Time.Locale.Compat
+import           Data.Time
+import qualified Data.Time.Locale.Compat    as LC
 import           Data.Word
 import           Text.Printf
 import           Text.Read
@@ -99,7 +101,7 @@ parse_time :: (ParseTime t,Replace s) => [String] -> s -> Maybe t
 parse_time tpls = prs . unpack_
   where
     prs s = listToMaybe $ catMaybes
-      [ parseTime defaultTimeLocale fmt s
+      [ parseTime LC.defaultTimeLocale fmt s
           | fmt<-tpls
           ]
 
