@@ -22,18 +22,24 @@ regex extends regex-base with:
 Schedule
 --------
 
-&nbsp;&nbsp;&#9745;&nbsp;**2017-01-26**&nbsp;&nbsp;0.0.0.1&nbsp;&nbsp;Pre-release (I)
-&nbsp;&nbsp;&#9745;&nbsp;**2017-01-30**&nbsp;&nbsp;0.0.0.2&nbsp;&nbsp;Pre-release (II)
-&nbsp;&nbsp;&#9744;&nbsp;**2017-02-06**&nbsp;&nbsp;0.0.1.0&nbsp;&nbsp;RFC
-&nbsp;&nbsp;&#9744;&nbsp;**2017-02-20**&nbsp;&nbsp;0.1.0.0&nbsp;&nbsp;a candidate stable release
-&nbsp;&nbsp;&#9744;&nbsp;**2017-03-20**&nbsp;&nbsp;1.0.0.0&nbsp;&nbsp;first stable release
+&nbsp;&nbsp;&#9745;&nbsp;**2017-01-26**&nbsp;&nbsp;0.0.0.1&nbsp;&nbsp;Pre-release (I)<br/>
+&nbsp;&nbsp;&#9745;&nbsp;**2017-01-30**&nbsp;&nbsp;0.0.0.2&nbsp;&nbsp;Pre-release (II)<br/>
+&nbsp;&nbsp;&#9744;&nbsp;**2017-02-06**&nbsp;&nbsp;0.0.1.0&nbsp;&nbsp;RFC<br/>
+&nbsp;&nbsp;&#9744;&nbsp;**2017-02-20**&nbsp;&nbsp;0.1.0.0&nbsp;&nbsp;a candidate stable release<br/>
+&nbsp;&nbsp;&#9744;&nbsp;**2017-03-20**&nbsp;&nbsp;1.0.0.0&nbsp;&nbsp;first stable release<br/>
 
 
 The Builds
 ----------
 
-For details of the current release and the build pipelines used to
-test it see the **[Build Status](build-status)** page.
+[![Hackage](badges/hackage.svg)](https://hackage.haskell.org/package/regex)
+[![BSD3 License](badges/license.svg)](https://tldrlegal.com/license/bsd-3-clause-license-%28revised%29)
+[![Un*x build](badges/unix-build.svg)](https://travis-ci.org/iconnect/regex)
+[![Windows build](badges/windows-build.svg)](https://ci.appveyor.com/project/engineerirngirisconnectcouk/regex/branch/master)
+[![Coverage](badges/coverage.svg)](https://coveralls.io/github/iconnect/regex?branch=master)
+
+For details of the current release and the build pipelines see the
+**[Build Status](build-status)** page.
 
 
 Installation Instructions
