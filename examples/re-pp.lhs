@@ -424,7 +424,8 @@ badges = mapM_ collect
     , (,) "coverage"        "https://img.shields.io/coveralls/iconnect/regex.svg"
     ]
   where
-    collect (nm,url) =
+    collect (nm,url) = do
+      putStrLn $ "updating badge: " ++ nm
       simpleHttp url >>= LBS.writeFile ("docs/badges/"++nm++".svg")
 \end{code}
 
@@ -480,6 +481,7 @@ testing
 \begin{code}
 test :: IO ()
 test = do
+  badges
   dm <- docMode
   test_pp "pp-doc" (loop dm) "data/pp-test.lhs" "data/pp-result-doc.lhs"
   gm <- genMode
