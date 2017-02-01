@@ -1,4 +1,4 @@
-<ol class='breadcrumb'><li><a href='.' title='Home'>Home</a></li> &gt; **Build Status**
+<a href='.' title='Home'>Home</a> &gt; **Build Status**
 
 Build Status
 ============
