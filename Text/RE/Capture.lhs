@@ -87,11 +87,7 @@ data Capture a =
 
 \begin{code}
 instance Functor Matches where
-  fmap f Matches{..} =
-    Matches
-      { matchesSource = f matchesSource
-      , allMatches   = map (fmap f) allMatches
-      }
+  fmap = map_matches
 
 instance Functor Match where
   fmap f Match{..} =
@@ -255,4 +251,11 @@ cvt hay arr =
         , captureOffset = off
         , captureLength = len
         }
+
+map_matches :: (a->b) -> Matches a -> Matches b
+map_matches f Matches{..} =
+  Matches
+    { matchesSource = f matchesSource
+    , allMatches    = map (fmap f) allMatches
+    }
 \end{code}
