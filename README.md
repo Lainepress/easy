@@ -24,7 +24,7 @@ regex extends regex-base with:
   * comprehensive documentation and copious examples
 
 
-Schedule
+Road Map
 --------
 
 - [X] **2017-01-26**&nbsp;&nbsp;0.0.0.1&nbsp;&nbsp;Pre-release (I)<br/>
