@@ -4,6 +4,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE QuasiQuotes                #-}
+{-# LANGUAGE FlexibleContexts           #-}
 {-# LANGUAGE OverloadedStrings          #-}
 
 module Main
@@ -23,10 +24,11 @@ import qualified Shelly                                   as SH
 import           System.Directory
 import           System.Environment
 import           TestKit
+import           Text.Heredoc
 import           Text.Printf
 import           Text.RE.Edit
 import           Text.RE.TDFA.ByteString.Lazy
-import           Text.RE.TDFA.Text                        as T
+import qualified Text.RE.TDFA.Text                        as TT
 import           Text.RE.Tools.Grep
 import           Text.RE.Tools.Sed
 \end{code}
@@ -41,6 +43,8 @@ main = do
     ["doc",fn,fn'] | is_file fn -> doc fn fn'
     ["gen",fn,fn'] | is_file fn -> gen fn fn'
     ["badges"]                  -> badges
+    ["bump-version",vrn]        -> bumpVersion vrn
+    ["site"]                    -> readme
     ["all"]                     -> gen_all
     _                           -> usage
   where
@@ -51,15 +55,17 @@ main = do
 
     usage = do
       pnm <- getProgName
-      let prg = ((pnm++" ")++)
+      let prg = (("  "++pnm++" ")++)
       putStr $ unlines
         [ "usage:"
-        , "  "++prg "--help"
-        , "  "++prg "[test]"
-        , "  "++prg "badges"
-        , "  "++prg "all"
-        , "  "++prg "doc (-|<in-file>) (-|<out-file>)"
-        , "  "++prg "gen (-|<in-file>) (-|<out-file>)"
+        , prg "--help"
+        , prg "[test]"
+        , prg "badges"
+        , prg "bump-version <version>"
+        , prg "site"
+        , prg "all"
+        , prg "doc (-|<in-file>) (-|<out-file>)"
+        , prg "gen (-|<in-file>) (-|<out-file>)"
         ]
 \end{code}
 
@@ -194,7 +200,7 @@ gen_all = do
     dm <- docMode
     loop dm "examples/re-tutorial-master.lhs" "tmp/re-tutorial.lhs"
     createDirectoryIfMissing False "tmp"
-    pandoc'
+    pandoc_lhs'
       "re-tutorial.lhs"
       "examples/re-tutorial.lhs"
       "tmp/re-tutorial.lhs"
@@ -203,10 +209,11 @@ gen_all = do
     gm <- genMode
     loop gm "examples/re-tutorial-master.lhs" "examples/re-tutorial.lhs"
     putStrLn ">> examples/re-tutorial.lhs"
+    readme
   where
-    pd fnm = case captureTextMaybe [cp|mnm|] $ fnm T.?=~ [re|^RE/(Tools/|Internal/)?${mnm}(@{%id})|] of
-        Just mnm -> pandoc fnm ("Text/"<>fnm<>".lhs") ("docs/"<>mnm<>".html")
-        Nothing  -> pandoc fnm ("examples/"<>fnm<>".lhs") ("docs/"<>fnm<>".html")
+    pd fnm = case captureTextMaybe [cp|mnm|] $ fnm TT.?=~ [re|^RE/(Tools/|Internal/)?${mnm}(@{%id})|] of
+        Just mnm -> pandoc_lhs fnm ("Text/"<>fnm<>".lhs") ("docs/"<>mnm<>".html")
+        Nothing  -> pandoc_lhs fnm ("examples/"<>fnm<>".lhs") ("docs/"<>fnm<>".html")
 \end{code}
 
 
@@ -418,29 +425,162 @@ badges
 
 \begin{code}
 badges :: IO ()
-badges = mapM_ collect
-    [ (,) "hackage"         "https://img.shields.io/hackage/v/regex.svg"
-    , (,) "license"         "https://img.shields.io/badge/license-BSD3-brightgreen.svg"
-    , (,) "unix-build"      "https://img.shields.io/travis/iconnect/regex.svg?label=Linux%2BmacOS"
-    , (,) "windows-build"   "https://img.shields.io/appveyor/ci/engineerirngirisconnectcouk/regex.svg?label=Windows"
-    , (,) "coverage"        "https://img.shields.io/coveralls/iconnect/regex.svg"
-    ]
+badges = do
+    mapM_ collect
+      [ (,) "license"         "https://img.shields.io/badge/license-BSD3-brightgreen.svg"
+      , (,) "unix-build"      "https://img.shields.io/travis/iconnect/regex.svg?label=Linux%2BmacOS"
+      , (,) "windows-build"   "https://img.shields.io/appveyor/ci/engineerirngirisconnectcouk/regex.svg?label=Windows"
+      , (,) "coverage"        "https://img.shields.io/coveralls/iconnect/regex.svg"
+      ]
+    substVersion "lib/hackage-template.svg" $ badge_fn "hackage"
   where
     collect (nm,url) = do
       putStrLn $ "updating badge: " ++ nm
-      simpleHttp url >>= LBS.writeFile ("docs/badges/"++nm++".svg")
+      simpleHttp url >>= LBS.writeFile (badge_fn nm)
+
+    badge_fn nm = "docs/badges/"++nm++".svg"
 \end{code}
+
+
+readme
+------
+
+\begin{code}
+readme :: IO ()
+readme = do
+  prep_page   MM_github  "lib/readme-master.md" "README.md"
+  prep_page   MM_hackage "lib/readme-master.md" "doc/README.md"
+  pandoc_page MM_pandoc  "lib/readme-master.md" "docs/index.html"
+  pandoc_page MM_pandoc  "lib/builds-master.md" "docs/build-status.html"
+\end{code}
+
+\begin{code}
+pandoc_page :: MarkdownMode -> FilePath -> FilePath -> IO ()
+pandoc_page mmd in_fp out_fp = do
+  mt_lbs <- LBS.readFile in_fp
+  (hdgs,md_lbs) <- prep_page' mmd mt_lbs
+  LBS.writeFile "tmp/page_pre_body.html" $ mk_pre_body_html hdgs
+  LBS.writeFile "tmp/page_pst_body.html"   pst_body_html
+  LBS.writeFile "tmp/page.markdown"        md_lbs
+  fmap (const ()) $
+    SH.shelly $ SH.verbosely $
+      SH.run "pandoc"
+        [ "-f", "markdown+grid_tables"
+        , "-t", "html"
+        , "-s"
+        , "-B", "tmp/page_pre_body.html"
+        , "-A", "tmp/page_pst_body.html"
+        , "-c", "lib/du.css"
+        , "-o", T.pack out_fp
+        , "tmp/page.markdown"
+        ]
+
+data Heading =
+  Heading
+    { _hdg_id    :: LBS.ByteString
+    , _hdg_title :: LBS.ByteString
+    }
+  deriving (Show)
+
+data MarkdownMode
+  = MM_github
+  | MM_hackage
+  | MM_pandoc
+  deriving (Eq,Show)
+
+prep_page :: MarkdownMode -> FilePath -> FilePath -> IO ()
+prep_page mmd in_fp out_fp = do
+  lbs      <- LBS.readFile in_fp
+  (_,lbs') <- prep_page' mmd lbs
+  LBS.writeFile out_fp lbs'
+
+prep_page' :: MarkdownMode -> LBS.ByteString -> IO ([Heading],LBS.ByteString)
+prep_page' mmd lbs = do
+    rf   <- newIORef []
+    lbs' <- sed' (scr rf) lbs
+    hdgs <- readIORef rf
+    return (hdgs,lbs')
+  where
+    scr rf = Select
+      [ (,) [re|^%heading#${ide}(@{%id}) +${ttl}([^ ].*)$|] $ EDIT_fun TOP $ heading mmd rf
+      , (,) [re|^.*$|]                                      $ EDIT_fun TOP $ \_ _ _ _->return Nothing
+      ]
+
+heading :: MarkdownMode
+        -> IORef [Heading]
+        -> LineNo
+        -> Match LBS.ByteString
+        -> Location
+        -> Capture LBS.ByteString
+        -> IO (Maybe LBS.ByteString)
+heading mmd rf _ mtch _ _ = do
+    modifyIORef rf (Heading ide ttl:)
+    return $ Just h2
+  where
+    h2 = case mmd of
+      MM_github  -> "## "<>ttl
+      MM_hackage -> "## "<>ttl
+      MM_pandoc  -> "<h2 id='"<>ide<>"'>"<>ttl<>"</h2>"
+
+    ide = mtch !$$ [cp|ide|]
+    ttl = mtch !$$ [cp|ttl|]
+
+mk_pre_body_html :: [Heading] -> LBS.ByteString
+mk_pre_body_html hdgs = hdr <> LBS.concat (map sec hdgs) <> ftr
+  where
+    hdr = [here|    <div id="container">
+    <div id="nav">
+      <div id="header">
+        <a href="#" id="logo" name="logo">regex</a>
+      </div>
+      <div class="section" id="sections">
+        <ul class="section-nav">
+|]
+
+    sec Heading{..} = LBS.unlines $ map ("          "<>)
+              [ "<li class='h2'>"
+              , "  <a href='#"<>_hdg_id<>"'>"<>_hdg_title<>"</a>"
+              , "</li>"
+              ]
+
+    ftr = [here|          </ul>
+      </div>
+      <div class="extra section" id="github">
+        <a href="https://github.com/iconnect/regex">Code</a>
+      </div>
+      <div class="extra section" id="github-issues">
+        <a href="https://github.com/iconnect/regex/issues">Issues</a>
+      </div>
+      <div class="extra section" id="travis">
+        <a href="http://travis-ci.org/iconnect/regex">
+          <img src="https://travis-ci.org/iconnect/regex.svg?branch=master">
+          </a>
+      </div>
+      <div class="extra section twitter">
+        <iframe allowtransparency="true" frameborder="0" scrolling="no" style="width:162px; height:20px;" src="https://platform.twitter.com/widgets/follow_button.html?screen_name=cdornan&amp;show_count=false">
+        </iframe>
+      </div>
+    </div>
+    <div id="content">
+|]
+
+pst_body_html :: LBS.ByteString
+pst_body_html = [here|      </div>
+    </div>
+|]
+\end{code}
+
 
 
 pandoc
 ------
 
 \begin{code}
-pandoc :: T.Text -> T.Text -> T.Text -> IO ()
-pandoc title in_file = pandoc' title in_file in_file
+pandoc_lhs :: T.Text -> T.Text -> T.Text -> IO ()
+pandoc_lhs title in_file = pandoc_lhs' title in_file in_file
 
-pandoc' :: T.Text -> T.Text -> T.Text -> T.Text -> IO ()
-pandoc' title repo_path in_file out_file = do
+pandoc_lhs' :: T.Text -> T.Text -> T.Text -> T.Text -> IO ()
+pandoc_lhs' title repo_path in_file out_file = do
   writeFile "tmp/bc.html" bc
   writeFile "tmp/ft.html" ft
   fmap (const ()) $
