@@ -94,9 +94,9 @@ tdfa_edit :: ModPath
           -> (ModPath,SedScript)
 tdfa_edit mp bs_lbs import_lbs =
     (,) mp $ Pipe
-        [ (,) module_re $ Template $ LBS.pack mp
-        , (,) import_re $ Template   import_lbs
-        , (,) bs_re     $ Template   bs_lbs
+        [ Template module_re $ LBS.pack mp
+        , Template import_re   import_lbs
+        , Template bs_re       bs_lbs
         ]
 
 pcre_edit :: ModPath
@@ -105,10 +105,10 @@ pcre_edit :: ModPath
           -> (ModPath,SedScript)
 pcre_edit mp bs_lbs import_lbs =
     (,) mp $ Pipe
-        [ (,) tdfa_re   $ Template   "PCRE"
-        , (,) module_re $ Template $ LBS.pack mp
-        , (,) import_re $ Template   import_lbs
-        , (,) bs_re     $ Template   bs_lbs
+        [ Template tdfa_re     "PCRE"
+        , Template module_re $ LBS.pack mp
+        , Template import_re   import_lbs
+        , Template bs_re       bs_lbs
         ]
 
 type ModPath = String

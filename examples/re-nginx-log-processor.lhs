@@ -133,8 +133,7 @@ script ctx = Select
     , on [re_|.*|]            QQQ parse_def
     ]
   where
-    on rex src prs =
-      (,) (rex lpo) $ Function TOP $ process_line ctx src prs
+    on rex src prs = Function (rex lpo) TOP $ process_line ctx src prs
 
     parse_def      = fmap capturedText . matchCapture
 \end{code}

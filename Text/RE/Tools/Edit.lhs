@@ -33,14 +33,14 @@ import           Text.RE.Types.LineNo
 -- the action selected by the first RE in the list, or perform all of the
 -- actions on line, arranged as a pipeline
 data Edits m re s
-  = Select [(re,Edit m s)]
-  | Pipe   [(re,Edit m s)]
+  = Select [Edit m re s]
+  | Pipe   [Edit m re s]
 
 -- | each Edit action specifies how the match should be processed
-data Edit m s
-  = Template s
-  | Function Context (LineNo->Match s->Location->Capture s->m (Maybe s))
-  | LineEdit         (LineNo->Matches s->m (LineEdit s))
+data Edit m re s
+  = Template re s
+  | Function re Context (LineNo->Match s->Location->Capture s->m (Maybe s))
+  | LineEdit re         (LineNo->Matches s->m (LineEdit s))
 
 -- | a LineEdit is the most general action thar can be performed on a line
 -- and is the only means of deleting a line
@@ -67,20 +67,23 @@ applyEdits lno ez0 s0 = case ez0 of
 applyEdit :: (IsRegex re s,Monad m,Functor m)
           => (s->s)
           -> LineNo
-          -> re
-          -> Edit m s
+          -> Edit m re s
           -> s
           -> m (Maybe s)
-applyEdit anl lno re edit s =
+applyEdit anl lno edit s =
   case allMatches acs of
     [] -> return Nothing
     _  -> fmap Just $ case edit of
-      Template tpl   -> return $ anl $ replaceAll         tpl acs
-      Function ctx f -> anl <$> replaceAllCapturesM replaceMethods ctx (f lno) acs
-      LineEdit     g -> fromMaybe s' . applyLineEdit anl <$> g lno acs
+      Template _ tpl   -> return $ anl $ replaceAll tpl                          acs
+      Function _ ctx f -> anl <$> replaceAllCapturesM replaceMethods ctx (f lno) acs
+      LineEdit _     g -> fromMaybe (anl s) . applyLineEdit anl <$> g lno        acs
   where
-    s'  = anl s
-    acs = matchMany re s
+    acs = matchMany rex s
+    rex = case edit of
+      Template rex_ _   -> rex_
+      Function rex_ _ _ -> rex_
+      LineEdit rex_   _ -> rex_
+
 
 -- | apply a 'LineEdit' to a line, using the function in the first
 -- argument to append a new line to the result; Nothing should be
@@ -93,24 +96,24 @@ applyLineEdit _    Delete         = Just   mempty
 
 select_edit_scripts :: (IsRegex re s,Monad m,Functor m)
                     => LineNo
-                    -> [(re,Edit m s)]
+                    -> [Edit m re s]
                     -> s
                     -> m s
 select_edit_scripts lno ps0 s = select ps0
   where
     select []           = return $ appendNewlineE s
-    select ((re,es):ps) =
-      applyEdit appendNewlineE lno re es s >>= maybe (select ps) return
+    select (edit:edits) =
+      applyEdit appendNewlineE lno edit s >>= maybe (select edits) return
 
 pipe_edit_scripts :: (IsRegex re s,Monad m,Functor m)
                   => LineNo
-                  -> [(re,Edit m s)]
+                  -> [Edit m re s]
                   -> s
                   -> m s
-pipe_edit_scripts lno ez s0 =
-    appendNewlineE <$> foldr f (return s0) ez
+pipe_edit_scripts lno edits s0 =
+    appendNewlineE <$> foldr f (return s0) edits
   where
-    f (re,es) act = do
+    f edit act = do
       s <- act
-      fromMaybe s <$> applyEdit id lno re es s
+      fromMaybe s <$> applyEdit id lno edit s
 \end{code}

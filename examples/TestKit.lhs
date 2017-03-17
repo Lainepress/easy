@@ -178,8 +178,8 @@ simple include processor
 \begin{code}
 include :: LBS.ByteString -> IO LBS.ByteString
 include = sed' $ Select
-    [ (,) [re|^%include ${file}(@{%string})$|] $ Function TOP   incl
-    , (,) [re|^.*$|]                           $ Function TOP $ \_ _ _ _->return Nothing
+    [ Function [re|^%include ${file}(@{%string})$|] TOP   incl
+    , Function [re|^.*$|]                           TOP $ \_ _ _ _->return Nothing
     ]
   where
     incl _ mtch _ _ = Just <$> LBS.readFile (prs_s $ mtch !$$ [cp|file|])

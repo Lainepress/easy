@@ -107,15 +107,15 @@ setup = Ctx <$> (newIORef True) <*> (newIORef False) <*> (newIORef Map.empty) <*
 
 gc_script :: Ctx -> Edits IO RE LBS.ByteString
 gc_script ctx = Select
-    [ (,) [re|^%Werror$|]                                      $ LineEdit $ w_error_gen              ctx
-    , (,) [re|^%Wwarn$|]                                       $ LineEdit $ w_warn_gen               ctx
-    , (,) [re|^%filter-regex-with-pcre$|]                      $ LineEdit $ w_filter_pcre            ctx
-    , (,) [re|^%- +${pkg}(@{%id-}) +${cond}(.*)$|]             $ LineEdit $ cond_gen                 ctx
-    , (,) [re|^%build-depends +${list}(@{%id-}( +@{%id-})+)$|] $ LineEdit $ build_depends_gen        ctx
-    , (,) [re|^%test +${i}(@{%id-})$|]                         $ LineEdit $ test_exe_gen True  False ctx
-    , (,) [re|^%exe +${i}(@{%id-})$|]                          $ LineEdit $ test_exe_gen False True  ctx
-    , (,) [re|^%test-exe +${i}(@{%id-})$|]                     $ LineEdit $ test_exe_gen True  True  ctx
-    , (,) [re|^.*$|]                                           $ LineEdit $ default_gen              ctx
+    [ LineEdit [re|^%Werror$|]                                      $ w_error_gen              ctx
+    , LineEdit [re|^%Wwarn$|]                                       $ w_warn_gen               ctx
+    , LineEdit [re|^%filter-regex-with-pcre$|]                      $ w_filter_pcre            ctx
+    , LineEdit [re|^%- +${pkg}(@{%id-}) +${cond}(.*)$|]             $ cond_gen                 ctx
+    , LineEdit [re|^%build-depends +${list}(@{%id-}( +@{%id-})+)$|] $ build_depends_gen        ctx
+    , LineEdit [re|^%test +${i}(@{%id-})$|]                         $ test_exe_gen True  False ctx
+    , LineEdit [re|^%exe +${i}(@{%id-})$|]                          $ test_exe_gen False True  ctx
+    , LineEdit [re|^%test-exe +${i}(@{%id-})$|]                     $ test_exe_gen True  True  ctx
+    , LineEdit [re|^.*$|]                                           $ default_gen              ctx
     ]
 
 w_error_gen, w_warn_gen, w_filter_pcre, cond_gen, build_depends_gen,

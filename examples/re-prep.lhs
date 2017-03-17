@@ -113,11 +113,11 @@ genMode = Gen <$> newIORef []
 prep_tut :: MODE -> FilePath -> FilePath -> IO ()
 prep_tut mode =
   sed $ Select
-    [ (,) [re|^%include ${file}(@{%string}) ${rex}(@{%string})$|] $ Function TOP $ inclde   mode
-    , (,) [re|^%main ${arg}(top|bottom)$|]                        $ LineEdit     $ main_    mode
-    , (,) [re|^${fn}(evalme@{%id}) = checkThis ${arg}(@{%string}) \(${ans}([^)]+)\) \$ *${exp}(.*)$|]
-                                                                  $ Function TOP $ evalme   mode
-    , (,) [re|^.*$|]                                              $ Function TOP $ passthru
+    [ Function [re|^%include ${file}(@{%string}) ${rex}(@{%string})$|] TOP $ inclde   mode
+    , LineEdit [re|^%main ${arg}(top|bottom)$|]                            $ main_    mode
+    , Function [re|^${fn}(evalme@{%id}) = checkThis ${arg}(@{%string}) \(${ans}([^)]+)\) \$ *${exp}(.*)$|]
+                                                                       TOP $ evalme   mode
+    , Function [re|^.*$|]                                              TOP $ passthru
     ]
 \end{code}
 
@@ -506,7 +506,7 @@ prep_page ttl mmd in_fp out_fp = do
 
 set_title :: LBS.ByteString -> LBS.ByteString -> LBS.ByteString
 set_title ttl lbs = fromMaybe oops $ flip sed' lbs $ Pipe
-    [ (,) [re|<<\$title\$>>|] $ Function TOP $ \_ _ _ _->return $ Just ttl
+    [ Function [re|<<\$title\$>>|] TOP $ \_ _ _ _->return $ Just ttl
     ]
   where
     -- runIdentity added to base in 4.9 only
@@ -522,10 +522,10 @@ prep_page' mmd lbs = do
     return (hdgs,lbs1<>lbs2)
   where
     scr rf_h rf_t = Select
-      [ (,) [re|^%heading#${ide}(@{%id}) +${ttl}([^ ].*)$|] $ Function TOP $ heading       mmd rf_t rf_h
-      , (,) [re|^- \[ \] +${itm}(.*)$|]                     $ Function TOP $ task_list     mmd rf_t False
-      , (,) [re|^- \[[Xx]\] +${itm}(.*)$|]                  $ Function TOP $ task_list     mmd rf_t True
-      , (,) [re|^.*$|]                                      $ Function TOP $ fin_task_list mmd rf_t
+      [ Function [re|^%heading#${ide}(@{%id}) +${ttl}([^ ].*)$|] TOP $ heading       mmd rf_t rf_h
+      , Function [re|^- \[ \] +${itm}(.*)$|]                     TOP $ task_list     mmd rf_t False
+      , Function [re|^- \[[Xx]\] +${itm}(.*)$|]                  TOP $ task_list     mmd rf_t True
+      , Function [re|^.*$|]                                      TOP $ fin_task_list mmd rf_t
       ]
 
 heading :: MarkdownMode
@@ -764,10 +764,10 @@ tweak_md :: MarkdownMode -> LBS.ByteString -> LBS.ByteString
 tweak_md mm lbs = case mm of
     MM_github  -> lbs
     MM_pandoc  -> awk
-      [ (,) [re|<https?://${rest}([^)]+)>|] $ Template "[${rest}]($0)"
+      [ Template [re|<https?://${rest}([^)]+)>|] "[${rest}]($0)"
       ]
     MM_hackage -> awk
-      [ (,) [re|<br/>$|] $ Template "\n"
+      [ Template [re|<br/>$|] "\n"
       ]
   where
     awk = fromMaybe oops . flip sed' lbs . Pipe
