@@ -47,6 +47,9 @@ import           Text.RE.TestBench.Parsers
 import           Text.RE.TestBench
 import           Text.RE.PCRE.ByteString.Lazy
 import qualified Text.RE.PCRE.String                      as S
+import           Text.RE.Types.Capture
+import           Text.RE.Types.Match
+import           Text.RE.Types.Replace
 import           Text.Printf
 \end{code}
 

@@ -105,11 +105,12 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <span class="kw">import           </span><span class="dt">System.Exit</span>
 <span class="kw">import           </span><span class="dt">System.IO</span>
 <span class="kw">import           </span><span class="dt">Text.Printf</span>
-<span class="kw">import           </span><span class="dt">Text.RE.Types.IsRegex</span>
 <span class="kw">import           </span><span class="dt">Text.RE.TDFA</span>
 <span class="kw">import           </span><span class="dt">Text.RE.TestBench.Parsers</span>
 <span class="kw">import           </span><span class="dt">Text.RE.Tools.Grep</span>
-<span class="kw">import           </span><span class="dt">Text.RE.Tools.Sed</span></code></pre></div>
+<span class="kw">import           </span><span class="dt">Text.RE.Tools.Sed</span>
+<span class="kw">import           </span><span class="dt">Text.RE.Types.Match</span>
+<span class="kw">import           </span><span class="dt">Text.RE.Types.Replace</span></code></pre></div>
 <h2 id="vrn-and-friends">Vrn and friends</h2>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Vrn</span> <span class="fu">=</span> <span class="dt">Vrn</span> { _vrn_a, _vrn_b, _vrn_c,<span class="ot"> _vrn_d ::</span> <span class="dt">Int</span> }
   <span class="kw">deriving</span> (<span class="dt">Show</span>,<span class="dt">Eq</span>,<span class="dt">Ord</span>)
@@ -224,8 +225,8 @@ test_pp lab loop test_file gold_file <span class="fu">=</span> <span class="kw">
 <h2 id="simple-include-processor">simple include processor</h2>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">include ::</span> <span class="dt">LBS.ByteString</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">LBS.ByteString</span>
 include <span class="fu">=</span> sed&#39; <span class="fu">$</span> <span class="dt">Select</span>
-    [ (,) [re|^%include ${file}(@{%string})$|] <span class="fu">$</span> <span class="dt">Function</span> <span class="dt">TOP</span>   incl
-    , (,) [re|^.*$|]                           <span class="fu">$</span> <span class="dt">Function</span> <span class="dt">TOP</span> <span class="fu">$</span> \_ _ _ _<span class="ot">-&gt;</span>return <span class="dt">Nothing</span>
+    [ <span class="dt">Function</span> [re|^%include ${file}(@{%string})$|] <span class="dt">TOP</span>   incl
+    , <span class="dt">Function</span> [re|^.*$|]                           <span class="dt">TOP</span> <span class="fu">$</span> \_ _ _ _<span class="ot">-&gt;</span>return <span class="dt">Nothing</span>
     ]
   <span class="kw">where</span>
     incl _ mtch _ _ <span class="fu">=</span> <span class="dt">Just</span> <span class="fu">&lt;$&gt;</span> LBS.readFile (prs_s <span class="fu">$</span> mtch <span class="fu">!$$</span> [cp|file|])

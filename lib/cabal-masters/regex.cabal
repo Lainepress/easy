@@ -34,6 +34,7 @@ Library
       Text.RE.Types.Matches
       Text.RE.Types.Options
       Text.RE.Types.Replace
+      Text.RE.Types.SearchReplace
 
 %build-depends array bytestring base base-compat containers hashable heredoc regex-base regex-tdfa regex-tdfa-text template-haskell text time time-locale-compat transformers unordered-containers
 

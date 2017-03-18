@@ -1,5 +1,6 @@
-{-# LANGUAGE FlexibleContexts           #-}
-{-# LANGUAGE CPP                        #-}
+{-# LANGUAGE FlexibleContexts               #-}
+{-# LANGUAGE CPP                            #-}
+{-# OPTIONS_GHC -fno-warn-duplicate-exports #-}
 #if __GLASGOW_HASKELL__ >= 800
 {-# OPTIONS_GHC -fno-warn-redundant-constraints #-}
 #endif
@@ -9,17 +10,26 @@ module Text.RE.TDFA
   (
   -- * Tutorial
   -- $tutorial
-
-  -- * The Overloaded Match Operators
+  -- * The Match Operators
     (*=~)
   , (?=~)
+  -- * The SearchReplace Operators
+  , (*=~/)
+  , (?=~/)
+  -- * The Classic rexex-base Match Operators
   , (=~)
   , (=~~)
   -- * The Toolkit
   -- $toolkit
   , module Text.RE
-  -- * The 'RE' Type
+  -- * The 'RE' Type and functions
   -- $re
+  , RE
+  , SimpleRegexOptions(..)
+  , reSource
+  , compileRegex
+  , compileRegexWith
+  , escape
   , module Text.RE.TDFA.RE
   -- * The Operator Instances
   -- $instances
@@ -44,6 +54,8 @@ import           Text.RE.TDFA.String()
 import           Text.RE.TDFA.Text()
 import           Text.RE.TDFA.Text.Lazy()
 import           Text.RE.Types.IsRegex
+import           Text.RE.Types.Options
+import           Text.RE.Types.SearchReplace
 
 
 -- | find all matches in text
@@ -59,6 +71,10 @@ import           Text.RE.Types.IsRegex
       -> RE
       -> Match s
 (?=~) bs rex = addCaptureNamesToMatch (reCaptureNames rex) $ matchOnce rex bs
+
+(*=~/), (?=~/) :: IsRegex RE s => s -> SearchReplace RE s -> s
+(?=~/) = flip searchReplaceFirst -- ^ search and replace once
+(*=~/) = flip searchReplaceAll   -- ^ search and replace, all occurrences
 
 -- | the regex-base polymorphic match operator
 (=~) :: ( B.RegexContext TDFA.Regex s a

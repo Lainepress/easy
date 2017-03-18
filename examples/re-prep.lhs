@@ -42,6 +42,10 @@ import           Text.RE.Tools.Grep
 import           Text.RE.Tools.Sed
 import           Text.RE.TDFA.ByteString.Lazy
 import qualified Text.RE.TDFA.Text                        as TT
+import           Text.RE.Types.Capture
+import           Text.RE.Types.Match
+import           Text.RE.Types.Replace
+import           Text.RE.Types.SearchReplace
 \end{code}
 
 \begin{code}
@@ -231,7 +235,7 @@ evalmeDoc :: LineNo
           -> Location
           -> Capture LBS.ByteString
           -> IO (Maybe LBS.ByteString)
-evalmeDoc _ mtch _ _ = return $ Just $ replace mtch $ LBS.intercalate "\n"
+evalmeDoc _ mtch _ _ = return $ Just $ flip replace mtch $ LBS.intercalate "\n"
   [ "ghci> ${exp}"
   , "${ans}"
   ]
@@ -764,10 +768,10 @@ tweak_md :: MarkdownMode -> LBS.ByteString -> LBS.ByteString
 tweak_md mm lbs = case mm of
     MM_github  -> lbs
     MM_pandoc  -> awk
-      [ Template [re|<https?://${rest}([^)]+)>|] "[${rest}]($0)"
+      [ Template $ SearchReplace [re|<https?://${rest}([^)]+)>|] "[${rest}]($0)"
       ]
     MM_hackage -> awk
-      [ Template [re|<br/>$|] "\n"
+      [ Template $ SearchReplace [re|<br/>$|] "\n"
       ]
   where
     awk = fromMaybe oops . flip sed' lbs . Pipe

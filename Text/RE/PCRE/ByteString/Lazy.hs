@@ -13,10 +13,13 @@ module Text.RE.PCRE.ByteString.Lazy
   (
   -- * Tutorial
   -- $tutorial
-
   -- * The Match Operators
     (*=~)
   , (?=~)
+  -- * The SearchReplace Operators
+  , (*=~/)
+  , (?=~/)
+  -- * The Classic rexex-base Match Operators
   , (=~)
   , (=~~)
   -- * The Toolkit
@@ -25,6 +28,7 @@ module Text.RE.PCRE.ByteString.Lazy
   -- * The 'RE' Type and functions
   -- $re
   , RE
+  , SimpleRegexOptions(..)
   , reSource
   , compileRegex
   , compileRegexWith
@@ -37,9 +41,12 @@ import qualified Data.ByteString.Lazy          as LBS
 import           Data.Typeable
 import           Text.Regex.Base
 import           Text.RE
-import           Text.RE.Types.IsRegex
 import           Text.RE.Internal.AddCaptureNames
+import           Text.RE.Types.IsRegex
+import           Text.RE.Types.Options
+import           Text.RE.Types.Replace
 import           Text.RE.PCRE.RE
+import           Text.RE.Types.SearchReplace
 import qualified Text.Regex.PCRE               as PCRE
 
 
@@ -54,6 +61,10 @@ import qualified Text.Regex.PCRE               as PCRE
       -> RE
       -> Match LBS.ByteString
 (?=~) bs rex = addCaptureNamesToMatch (reCaptureNames rex) $ match (reRegex rex) bs
+
+(*=~/), (?=~/) :: LBS.ByteString -> SearchReplace RE LBS.ByteString -> LBS.ByteString
+(?=~/) = flip searchReplaceFirst -- ^ search and replace once
+(*=~/) = flip searchReplaceAll   -- ^ search and replace, all occurrences
 
 -- | the regex-base polymorphic match operator
 (=~) :: ( Typeable a

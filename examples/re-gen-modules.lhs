@@ -27,6 +27,7 @@ import           System.Exit
 import           System.IO
 import           Text.RE.TDFA.ByteString.Lazy
 import           Text.RE.Tools.Sed
+import           Text.RE.Types.SearchReplace
 
 
 main :: IO ()
@@ -94,9 +95,9 @@ tdfa_edit :: ModPath
           -> (ModPath,SedScript)
 tdfa_edit mp bs_lbs import_lbs =
     (,) mp $ Pipe
-        [ Template module_re $ LBS.pack mp
-        , Template import_re   import_lbs
-        , Template bs_re       bs_lbs
+        [ Template $ SearchReplace module_re $ LBS.pack mp
+        , Template $ SearchReplace import_re   import_lbs
+        , Template $ SearchReplace bs_re       bs_lbs
         ]
 
 pcre_edit :: ModPath
@@ -105,10 +106,10 @@ pcre_edit :: ModPath
           -> (ModPath,SedScript)
 pcre_edit mp bs_lbs import_lbs =
     (,) mp $ Pipe
-        [ Template tdfa_re     "PCRE"
-        , Template module_re $ LBS.pack mp
-        , Template import_re   import_lbs
-        , Template bs_re       bs_lbs
+        [ Template $ SearchReplace tdfa_re     "PCRE"
+        , Template $ SearchReplace module_re $ LBS.pack mp
+        , Template $ SearchReplace import_re   import_lbs
+        , Template $ SearchReplace bs_re       bs_lbs
         ]
 
 type ModPath = String

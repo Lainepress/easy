@@ -266,10 +266,10 @@ replaceAllCapturesM r ctx phi_ <span class="dt">Matches</span>{<span class="fu">
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="co">-- | replace with a template containing $0 for whole text,</span>
 <span class="co">-- $1 for first capture, etc.</span>
 <span class="ot">replace ::</span> <span class="dt">Replace</span> a
-        <span class="ot">=&gt;</span> <span class="dt">Match</span> a
+        <span class="ot">=&gt;</span> a
+        <span class="ot">-&gt;</span> <span class="dt">Match</span> a
         <span class="ot">-&gt;</span> a
-        <span class="ot">-&gt;</span> a
-replace c tpl <span class="fu">=</span> replaceCaptures <span class="dt">TOP</span> (parseTemplateE tpl) c</code></pre></div>
+replace tpl c <span class="fu">=</span> replaceCaptures <span class="dt">TOP</span> (parseTemplateE tpl) c</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="co">-- | substitutes using a function that takes the full Match</span>
 <span class="co">-- context and returns the same replacement text as the _phi_phi</span>
 <span class="co">-- context.</span>

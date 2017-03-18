@@ -52,6 +52,7 @@ import           Text.Regex.TDFA.Text()
 import           Text.Regex.TDFA.Text.Lazy()
 \end{code}
 
+
 \begin{code}
 -- | Replace provides the missing methods needed to replace the matched
 -- text; lengthE is the minimum implementation
@@ -229,10 +230,10 @@ replaceAllCapturesM r ctx phi_ Matches{..} =
 -- | replace with a template containing $0 for whole text,
 -- $1 for first capture, etc.
 replace :: Replace a
-        => Match a
+        => a
+        -> Match a
         -> a
-        -> a
-replace c tpl = replaceCaptures TOP (parseTemplateE tpl) c
+replace tpl c = replaceCaptures TOP (parseTemplateE tpl) c
 \end{code}
 
 \begin{code}
@@ -467,5 +468,4 @@ fixpoint f = chk . iterate f
          )
       => source -> String -> target
 ($=~) = (=~)
-
 \end{code}

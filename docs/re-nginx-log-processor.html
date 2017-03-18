@@ -106,6 +106,9 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <span class="kw">import           </span><span class="dt">Text.RE.TestBench</span>
 <span class="kw">import           </span><span class="dt">Text.RE.PCRE.ByteString.Lazy</span>
 <span class="kw">import qualified</span> <span class="dt">Text.RE.PCRE.String</span>                      <span class="kw">as</span> <span class="dt">S</span>
+<span class="kw">import           </span><span class="dt">Text.RE.Types.Capture</span>
+<span class="kw">import           </span><span class="dt">Text.RE.Types.Match</span>
+<span class="kw">import           </span><span class="dt">Text.RE.Types.Replace</span>
 <span class="kw">import           </span><span class="dt">Text.Printf</span></code></pre></div>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">main ::</span> <span class="dt">IO</span> ()
 main <span class="fu">=</span> <span class="kw">do</span>
@@ -180,8 +183,7 @@ script ctx <span class="fu">=</span> <span class="dt">Select</span>
     , on [re_|.*|]            <span class="dt">QQQ</span> parse_def
     ]
   <span class="kw">where</span>
-    on rex src prs <span class="fu">=</span>
-      (,) (rex lpo) <span class="fu">$</span> <span class="dt">Function</span> <span class="dt">TOP</span> <span class="fu">$</span> process_line ctx src prs
+    on rex src prs <span class="fu">=</span> <span class="dt">Function</span> (rex lpo) <span class="dt">TOP</span> <span class="fu">$</span> process_line ctx src prs
 
     parse_def      <span class="fu">=</span> fmap capturedText <span class="fu">.</span> matchCapture</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">process_line ::</span> <span class="dt">IsEvent</span> a

@@ -100,7 +100,11 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <span class="kw">import           </span><span class="dt">Text.RE.Tools.Grep</span>
 <span class="kw">import           </span><span class="dt">Text.RE.Tools.Sed</span>
 <span class="kw">import           </span><span class="dt">Text.RE.TDFA.ByteString.Lazy</span>
-<span class="kw">import qualified</span> <span class="dt">Text.RE.TDFA.Text</span>                        <span class="kw">as</span> <span class="dt">TT</span></code></pre></div>
+<span class="kw">import qualified</span> <span class="dt">Text.RE.TDFA.Text</span>                        <span class="kw">as</span> <span class="dt">TT</span>
+<span class="kw">import           </span><span class="dt">Text.RE.Types.Capture</span>
+<span class="kw">import           </span><span class="dt">Text.RE.Types.Match</span>
+<span class="kw">import           </span><span class="dt">Text.RE.Types.Replace</span>
+<span class="kw">import           </span><span class="dt">Text.RE.Types.SearchReplace</span></code></pre></div>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">main ::</span> <span class="dt">IO</span> ()
 main <span class="fu">=</span> <span class="kw">do</span>
   as  <span class="ot">&lt;-</span> getArgs
@@ -151,11 +155,11 @@ genMode <span class="fu">=</span> <span class="dt">Gen</span> <span class="fu">&
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">prep_tut ::</span> <span class="dt">MODE</span> <span class="ot">-&gt;</span> FilePath <span class="ot">-&gt;</span> FilePath <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
 prep_tut mode <span class="fu">=</span>
   sed <span class="fu">$</span> <span class="dt">Select</span>
-    [ (,) [re|^%include ${file}(@{%string}) ${rex}(@{%string})$|] <span class="fu">$</span> <span class="dt">Function</span> <span class="dt">TOP</span> <span class="fu">$</span> inclde   mode
-    , (,) [re|^%main ${arg}(top|bottom)$|]                        <span class="fu">$</span> <span class="dt">LineEdit</span>     <span class="fu">$</span> main_    mode
-    , (,) [re|^${fn}(evalme@{%id}) = checkThis ${arg}(@{%string}) \(${ans}([^)]+)\) \$ *${exp}(.*)$|]
-                                                                  <span class="fu">$</span> <span class="dt">Function</span> <span class="dt">TOP</span> <span class="fu">$</span> evalme   mode
-    , (,) [re|^.*$|]                                              <span class="fu">$</span> <span class="dt">Function</span> <span class="dt">TOP</span> <span class="fu">$</span> passthru
+    [ <span class="dt">Function</span> [re|^%include ${file}(@{%string}) ${rex}(@{%string})$|] <span class="dt">TOP</span> <span class="fu">$</span> inclde   mode
+    , <span class="dt">LineEdit</span> [re|^%main ${arg}(top|bottom)$|]                            <span class="fu">$</span> main_    mode
+    , <span class="dt">Function</span> [re|^${fn}(evalme@{%id}) = checkThis ${arg}(@{%string}) \(${ans}([^)]+)\) \$ *${exp}(.*)$|]
+                                                                       <span class="dt">TOP</span> <span class="fu">$</span> evalme   mode
+    , <span class="dt">Function</span> [re|^.*$|]                                              <span class="dt">TOP</span> <span class="fu">$</span> passthru
     ]</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">inclde,
 <span class="ot">  evalme ::</span> <span class="dt">MODE</span>
@@ -251,7 +255,7 @@ includeDoc _ mtch _ _ <span class="fu">=</span> fmap <span class="dt">Just</span
           <span class="ot">-&gt;</span> <span class="dt">Location</span>
           <span class="ot">-&gt;</span> <span class="dt">Capture</span> <span class="dt">LBS.ByteString</span>
           <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Maybe</span> <span class="dt">LBS.ByteString</span>)
-evalmeDoc _ mtch _ _ <span class="fu">=</span> return <span class="fu">$</span> <span class="dt">Just</span> <span class="fu">$</span> replace mtch <span class="fu">$</span> LBS.intercalate <span class="st">&quot;\n&quot;</span>
+evalmeDoc _ mtch _ _ <span class="fu">=</span> return <span class="fu">$</span> <span class="dt">Just</span> <span class="fu">$</span> flip replace mtch <span class="fu">$</span> LBS.intercalate <span class="st">&quot;\n&quot;</span>
   [ <span class="st">&quot;ghci&gt; ${exp}&quot;</span>
   , <span class="st">&quot;${ans}&quot;</span>
   ]</code></pre></div>
@@ -472,7 +476,7 @@ prep_page ttl mmd in_fp out_fp <span class="fu">=</span> <span class="kw">do</sp
 
 <span class="ot">set_title ::</span> <span class="dt">LBS.ByteString</span> <span class="ot">-&gt;</span> <span class="dt">LBS.ByteString</span> <span class="ot">-&gt;</span> <span class="dt">LBS.ByteString</span>
 set_title ttl lbs <span class="fu">=</span> fromMaybe oops <span class="fu">$</span> flip sed&#39; lbs <span class="fu">$</span> <span class="dt">Pipe</span>
-    [ (,) [re|&lt;&lt;\$title\$&gt;&gt;|] <span class="fu">$</span> <span class="dt">Function</span> <span class="dt">TOP</span> <span class="fu">$</span> \_ _ _ _<span class="ot">-&gt;</span>return <span class="fu">$</span> <span class="dt">Just</span> ttl
+    [ <span class="dt">Function</span> [re|&lt;&lt;\$title\$&gt;&gt;|] <span class="dt">TOP</span> <span class="fu">$</span> \_ _ _ _<span class="ot">-&gt;</span>return <span class="fu">$</span> <span class="dt">Just</span> ttl
     ]
   <span class="kw">where</span>
     <span class="co">-- runIdentity added to base in 4.9 only</span>
@@ -488,10 +492,10 @@ prep_page&#39; mmd lbs <span class="fu">=</span> <span class="kw">do</span>
     return (hdgs,lbs1<span class="fu">&lt;&gt;</span>lbs2)
   <span class="kw">where</span>
     scr rf_h rf_t <span class="fu">=</span> <span class="dt">Select</span>
-      [ (,) [re|^%heading#${ide}(@{%id}) +${ttl}([^ ].*)$|] <span class="fu">$</span> <span class="dt">Function</span> <span class="dt">TOP</span> <span class="fu">$</span> heading       mmd rf_t rf_h
-      , (,) [re|^- \[ \] +${itm}(.*)$|]                     <span class="fu">$</span> <span class="dt">Function</span> <span class="dt">TOP</span> <span class="fu">$</span> task_list     mmd rf_t <span class="dt">False</span>
-      , (,) [re|^- \[[Xx]\] +${itm}(.*)$|]                  <span class="fu">$</span> <span class="dt">Function</span> <span class="dt">TOP</span> <span class="fu">$</span> task_list     mmd rf_t <span class="dt">True</span>
-      , (,) [re|^.*$|]                                      <span class="fu">$</span> <span class="dt">Function</span> <span class="dt">TOP</span> <span class="fu">$</span> fin_task_list mmd rf_t
+      [ <span class="dt">Function</span> [re|^%heading#${ide}(@{%id}) +${ttl}([^ ].*)$|] <span class="dt">TOP</span> <span class="fu">$</span> heading       mmd rf_t rf_h
+      , <span class="dt">Function</span> [re|^- \[ \] +${itm}(.*)$|]                     <span class="dt">TOP</span> <span class="fu">$</span> task_list     mmd rf_t <span class="dt">False</span>
+      , <span class="dt">Function</span> [re|^- \[[Xx]\] +${itm}(.*)$|]                  <span class="dt">TOP</span> <span class="fu">$</span> task_list     mmd rf_t <span class="dt">True</span>
+      , <span class="dt">Function</span> [re|^.*$|]                                      <span class="dt">TOP</span> <span class="fu">$</span> fin_task_list mmd rf_t
       ]
 
 <span class="ot">heading ::</span> <span class="dt">MarkdownMode</span>
@@ -712,10 +716,10 @@ pandoc_lhs&#39; title repo_path in_file out_file <span class="fu">=</span> <span
 tweak_md mm lbs <span class="fu">=</span> <span class="kw">case</span> mm <span class="kw">of</span>
     <span class="dt">MM_github</span>  <span class="ot">-&gt;</span> lbs
     <span class="dt">MM_pandoc</span>  <span class="ot">-&gt;</span> awk
-      [ (,) [re|&lt;https?://${rest}([^)]+)&gt;|] <span class="fu">$</span> <span class="dt">Template</span> <span class="st">&quot;[${rest}]($0)&quot;</span>
+      [ <span class="dt">Template</span> <span class="fu">$</span> <span class="dt">SearchReplace</span> [re|&lt;https?://${rest}([^)]+)&gt;|] <span class="st">&quot;[${rest}]($0)&quot;</span>
       ]
     <span class="dt">MM_hackage</span> <span class="ot">-&gt;</span> awk
-      [ (,) [re|&lt;br/&gt;$|] <span class="fu">$</span> <span class="dt">Template</span> <span class="st">&quot;\n&quot;</span>
+      [ <span class="dt">Template</span> <span class="fu">$</span> <span class="dt">SearchReplace</span> [re|&lt;br/&gt;$|] <span class="st">&quot;\n&quot;</span>
       ]
   <span class="kw">where</span>
     awk <span class="fu">=</span> fromMaybe oops <span class="fu">.</span> flip sed&#39; lbs <span class="fu">.</span> <span class="dt">Pipe</span>

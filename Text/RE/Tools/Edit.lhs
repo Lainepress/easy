@@ -7,8 +7,11 @@
 #endif
 
 module Text.RE.Tools.Edit
-  ( Edits(..)
+  (
+  -- * Editing
+    Edits(..)
   , Edit(..)
+  , SearchReplace(..)
   , LineEdit(..)
   , applyEdits
   , applyEdit
@@ -25,28 +28,31 @@ module Text.RE.Tools.Edit
 import           Data.Maybe
 import           Prelude.Compat
 import           Text.RE
+import           Text.RE.Types.Capture
 import           Text.RE.Types.IsRegex
 import           Text.RE.Types.LineNo
+import           Text.RE.Types.Replace
+import           Text.RE.Types.SearchReplace
 
 
 -- | an 'Edits' script will, for each line in the file, either perform
 -- the action selected by the first RE in the list, or perform all of the
 -- actions on line, arranged as a pipeline
 data Edits m re s
-  = Select [Edit m re s]
-  | Pipe   [Edit m re s]
+  = Select ![Edit m re s]
+  | Pipe   ![Edit m re s]
 
 -- | each Edit action specifies how the match should be processed
 data Edit m re s
-  = Template re s
-  | Function re Context (LineNo->Match s->Location->Capture s->m (Maybe s))
-  | LineEdit re         (LineNo->Matches s->m (LineEdit s))
+  = Template !(SearchReplace re s)
+  | Function !re Context !(LineNo->Match s->Location->Capture s->m (Maybe s))
+  | LineEdit !re         !(LineNo->Matches s->m (LineEdit s))
 
 -- | a LineEdit is the most general action thar can be performed on a line
 -- and is the only means of deleting a line
 data LineEdit s
   = NoEdit
-  | ReplaceWith s
+  | ReplaceWith !s
   | Delete
   deriving (Show)
 
@@ -74,13 +80,13 @@ applyEdit anl lno edit s =
   case allMatches acs of
     [] -> return Nothing
     _  -> fmap Just $ case edit of
-      Template _ tpl   -> return $ anl $ replaceAll tpl                          acs
-      Function _ ctx f -> anl <$> replaceAllCapturesM replaceMethods ctx (f lno) acs
-      LineEdit _     g -> fromMaybe (anl s) . applyLineEdit anl <$> g lno        acs
+      Template srch_rpl -> return $ anl $ replaceAll (getTemplate srch_rpl)       acs
+      Function _ ctx f  -> anl <$> replaceAllCapturesM replaceMethods ctx (f lno) acs
+      LineEdit _     g  -> fromMaybe (anl s) . applyLineEdit anl <$> g lno        acs
   where
     acs = matchMany rex s
     rex = case edit of
-      Template rex_ _   -> rex_
+      Template srch_rpl -> getSearch srch_rpl
       Function rex_ _ _ -> rex_
       LineEdit rex_   _ -> rex_
 

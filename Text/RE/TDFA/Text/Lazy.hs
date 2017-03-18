@@ -13,10 +13,13 @@ module Text.RE.TDFA.Text.Lazy
   (
   -- * Tutorial
   -- $tutorial
-
   -- * The Match Operators
     (*=~)
   , (?=~)
+  -- * The SearchReplace Operators
+  , (*=~/)
+  , (?=~/)
+  -- * The Classic rexex-base Match Operators
   , (=~)
   , (=~~)
   -- * The Toolkit
@@ -25,6 +28,7 @@ module Text.RE.TDFA.Text.Lazy
   -- * The 'RE' Type and functions
   -- $re
   , RE
+  , SimpleRegexOptions(..)
   , reSource
   , compileRegex
   , compileRegexWith
@@ -37,9 +41,12 @@ import qualified Data.Text.Lazy                as TL
 import           Data.Typeable
 import           Text.Regex.Base
 import           Text.RE
-import           Text.RE.Types.IsRegex
 import           Text.RE.Internal.AddCaptureNames
+import           Text.RE.Types.IsRegex
+import           Text.RE.Types.Options
+import           Text.RE.Types.Replace
 import           Text.RE.TDFA.RE
+import           Text.RE.Types.SearchReplace
 import qualified Text.Regex.TDFA               as TDFA
 
 
@@ -54,6 +61,10 @@ import qualified Text.Regex.TDFA               as TDFA
       -> RE
       -> Match TL.Text
 (?=~) bs rex = addCaptureNamesToMatch (reCaptureNames rex) $ match (reRegex rex) bs
+
+(*=~/), (?=~/) :: TL.Text -> SearchReplace RE TL.Text -> TL.Text
+(?=~/) = flip searchReplaceFirst -- ^ search and replace once
+(*=~/) = flip searchReplaceAll   -- ^ search and replace, all occurrences
 
 -- | the regex-base polymorphic match operator
 (=~) :: ( Typeable a

@@ -38,11 +38,12 @@ import           System.Environment
 import           System.Exit
 import           System.IO
 import           Text.Printf
-import           Text.RE.Types.IsRegex
 import           Text.RE.TDFA
 import           Text.RE.TestBench.Parsers
 import           Text.RE.Tools.Grep
 import           Text.RE.Tools.Sed
+import           Text.RE.Types.Match
+import           Text.RE.Types.Replace
 \end{code}
 
 

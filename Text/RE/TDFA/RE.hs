@@ -52,7 +52,6 @@ import           Data.Functor.Identity
 import           Language.Haskell.TH
 import           Language.Haskell.TH.Quote
 import           Prelude.Compat
-import           Text.RE
 import           Text.RE.Internal.EscapeREString
 import           Text.RE.Internal.NamedCaptures
 import           Text.RE.Internal.PreludeMacros
@@ -60,6 +59,7 @@ import           Text.RE.Internal.QQ
 import           Text.RE.TestBench
 import           Text.RE.Types.CaptureID
 import           Text.RE.Types.Options
+import           Text.RE.Types.Replace
 import           Text.Regex.TDFA
 
 

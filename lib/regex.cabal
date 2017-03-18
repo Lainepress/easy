@@ -68,6 +68,7 @@ Library
       Text.RE.Types.Matches
       Text.RE.Types.Options
       Text.RE.Types.Replace
+      Text.RE.Types.SearchReplace
 
     Default-Language:   Haskell2010
     GHC-Options:

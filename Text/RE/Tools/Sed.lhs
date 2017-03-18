@@ -33,6 +33,7 @@ import           Prelude.Compat
 import           Text.RE
 import           Text.RE.Tools.Edit
 import           Text.RE.Types.IsRegex
+import           Text.RE.Types.Replace
 
 
 -- | read a file, apply an 'Edits' script to each line it and

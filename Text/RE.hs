@@ -18,66 +18,25 @@ module Text.RE
   -- ** The Match Operators
   -- $operators
 
-  -- * Matches, Match & Capture
-    Matches(..)
-  , Match(..)
-  , Capture(..)
-  , noMatch
-  -- ** Matches functions
+  -- * Matches
+    Matches
+  , matchesSource
+  , allMatches
   , anyMatches
   , countMatches
   , matches
-  , mainCaptures
-  -- ** Match functions
+  -- ** Match
+  , Match
+  , matchSource
   , matched
   , matchedText
-  , matchCapture
-  , matchCaptures
-  , (!$$)
-  , captureText
-  , (!$$?)
-  , captureTextMaybe
-  , (!$)
-  , capture
-  , (!$?)
-  , captureMaybe
-  -- ** Capture functions
-  , hasCaptured
-  , capturePrefix
-  , captureSuffix
-  -- * Options
-  , SimpleRegexOptions(..)
-  -- * CaptureID
-  , CaptureID
-  -- * Replace
-  , Replace(..)
-  , ReplaceMethods(..)
-  , replaceMethods
-  , Context(..)
-  , Location(..)
-  , isTopLocation
-  , replace
-  , replaceAll
-  , replaceAllCaptures
-  , replaceAllCaptures_
-  , replaceAllCapturesM
-  , replaceCaptures
-  , replaceCaptures_
-  , replaceCapturesM
-  , expandMacros
-  , expandMacros'
   ) where
 
-import           Text.RE.Types.Capture
-import           Text.RE.Types.CaptureID
 import           Text.RE.Types.Match
 import           Text.RE.Types.Matches
-import           Text.RE.Types.Options
-import           Text.RE.Types.Replace
 
 -- $tutorial
--- We have a regex tutorial at <http://tutorial.regex.uk>. These API
--- docs are mainly for reference.
+-- We have a regex tutorial at <http://tutorial.regex.uk>.
 
 -- $use
 --

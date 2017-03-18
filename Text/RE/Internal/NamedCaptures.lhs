@@ -29,6 +29,7 @@ import           Text.RE.Internal.QQ
 import           Text.RE.TestBench
 import           Text.RE.Tools.Lex
 import           Text.RE.Types.CaptureID
+import           Text.RE.Types.Match
 import           Text.Regex.TDFA
 
 

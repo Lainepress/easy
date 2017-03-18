@@ -103,8 +103,11 @@ This pragma is a just technical pragma, combined with the <code>Prelude.Compat</
 </ul>
 For this tutorial we will use classic Haskell strings but any application dealing with bulk text will probably want to choose one of the other options.
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">import           </span><span class="dt">Text.RE.TDFA.String</span>
+<span class="kw">import           </span><span class="dt">Text.RE.Types.Capture</span>
 <span class="kw">import           </span><span class="dt">Text.RE.Types.CaptureID</span>
-<span class="kw">import           </span><span class="dt">Text.RE.Types.Options</span></code></pre></div>
+<span class="kw">import           </span><span class="dt">Text.RE.Types.Match</span>
+<span class="kw">import           </span><span class="dt">Text.RE.Types.Options</span>
+<span class="kw">import           </span><span class="dt">Text.RE.Types.Replace</span></code></pre></div>
 <p>If you are predominantly matching against a single type in your module then you will probably find it more convenient to use the relevant module rather than than the more polymorphic opertors but it is really a matter of convenience.</p>
 We will also need access to a small selection of common libraries for our examples.
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">import           </span><span class="dt">Control.Applicative</span>
@@ -466,8 +469,7 @@ script ctx <span class="fu">=</span> <span class="dt">Select</span>
     , on [re_|.*|]            <span class="dt">QQQ</span> parse_def
     ]
   <span class="kw">where</span>
-    on rex src prs <span class="fu">=</span>
-      (,) (rex lpo) <span class="fu">$</span> <span class="dt">Function</span> <span class="dt">TOP</span> <span class="fu">$</span> process_line ctx src prs
+    on rex src prs <span class="fu">=</span> <span class="dt">Function</span> (rex lpo) <span class="dt">TOP</span> <span class="fu">$</span> process_line ctx src prs
 
     parse_def      <span class="fu">=</span> fmap capturedText <span class="fu">.</span> matchCapture</code></pre></div>
 </div>
@@ -660,8 +662,8 @@ date_reformat <span class="fu">=</span> my_replace [re|${y}([0-9]{4})-${m}([0-9]
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">loop ::</span> FilePath <span class="ot">-&gt;</span> FilePath <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
 loop <span class="fu">=</span>
   sed <span class="fu">$</span> <span class="dt">Select</span>
-    [ (,) [re|^%include ${file}(@{%string}) ${rex}(@{%string})$|] <span class="fu">$</span> <span class="dt">Function</span> <span class="dt">TOP</span>   include_file
-    , (,) [re|^.*$|]                                              <span class="fu">$</span> <span class="dt">Function</span> <span class="dt">TOP</span> <span class="fu">$</span> \_ _ _ _<span class="ot">-&gt;</span>return <span class="dt">Nothing</span>
+    [ <span class="dt">Function</span> [re|^%include ${file}(@{%string}) ${rex}(@{%string})$|] <span class="dt">TOP</span> include_file
+    , <span class="dt">Function</span> [re|^.*$|]                                              <span class="dt">TOP</span> <span class="fu">$</span> \_ _ _ _<span class="ot">-&gt;</span>return <span class="dt">Nothing</span>
     ]</code></pre></div>
 </div>
 <p>The <code>extract</code> action takes the path to the file containing the fragment and the RE that will match a line in the fragment and returns the text of the fragment (wrapped in a simple styling div).</p>

@@ -36,6 +36,9 @@ import           Text.RE.TDFA.ByteString.Lazy
 import           Text.RE.TestBench.Parsers
 import           Text.RE.Tools.Grep
 import           Text.RE.Tools.Sed
+import           Text.RE.Types.Capture
+import           Text.RE.Types.Match
+import           Text.RE.Types.Replace
 \end{code}
 
 \begin{code}

@@ -41,6 +41,8 @@ import           Text.RE.TDFA.ByteString.Lazy
 import           Text.RE.TDFA.Text                        as T
 import           Text.RE.Tools.Grep
 import           Text.RE.Tools.Sed
+import           Text.RE.Types.Match
+import           Text.RE.Types.Matches
 
 
 main :: IO ()
