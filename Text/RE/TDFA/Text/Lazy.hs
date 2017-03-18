@@ -62,9 +62,13 @@ import qualified Text.Regex.TDFA               as TDFA
       -> Match TL.Text
 (?=~) bs rex = addCaptureNamesToMatch (reCaptureNames rex) $ match (reRegex rex) bs
 
-(*=~/), (?=~/) :: TL.Text -> SearchReplace RE TL.Text -> TL.Text
-(?=~/) = flip searchReplaceFirst -- ^ search and replace once
-(*=~/) = flip searchReplaceAll   -- ^ search and replace, all occurrences
+-- | search and replace once
+(?=~/) :: TL.Text -> SearchReplace RE TL.Text -> TL.Text
+(?=~/) = flip searchReplaceFirst
+
+-- | search and replace, all occurrences
+(*=~/) :: TL.Text -> SearchReplace RE TL.Text -> TL.Text
+(*=~/) = flip searchReplaceAll
 
 -- | the regex-base polymorphic match operator
 (=~) :: ( Typeable a

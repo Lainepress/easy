@@ -62,9 +62,13 @@ import qualified Text.Regex.TDFA               as TDFA
       -> Match B.ByteString
 (?=~) bs rex = addCaptureNamesToMatch (reCaptureNames rex) $ match (reRegex rex) bs
 
-(*=~/), (?=~/) :: B.ByteString -> SearchReplace RE B.ByteString -> B.ByteString
-(?=~/) = flip searchReplaceFirst -- ^ search and replace once
-(*=~/) = flip searchReplaceAll   -- ^ search and replace, all occurrences
+-- | search and replace once
+(?=~/) :: B.ByteString -> SearchReplace RE B.ByteString -> B.ByteString
+(?=~/) = flip searchReplaceFirst
+
+-- | search and replace, all occurrences
+(*=~/) :: B.ByteString -> SearchReplace RE B.ByteString -> B.ByteString
+(*=~/) = flip searchReplaceAll
 
 -- | the regex-base polymorphic match operator
 (=~) :: ( Typeable a

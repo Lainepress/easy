@@ -62,9 +62,13 @@ import qualified Text.Regex.TDFA               as TDFA
       -> Match String
 (?=~) bs rex = addCaptureNamesToMatch (reCaptureNames rex) $ match (reRegex rex) bs
 
-(*=~/), (?=~/) :: String -> SearchReplace RE String -> String
-(?=~/) = flip searchReplaceFirst -- ^ search and replace once
-(*=~/) = flip searchReplaceAll   -- ^ search and replace, all occurrences
+-- | search and replace once
+(?=~/) :: String -> SearchReplace RE String -> String
+(?=~/) = flip searchReplaceFirst
+
+-- | search and replace, all occurrences
+(*=~/) :: String -> SearchReplace RE String -> String
+(*=~/) = flip searchReplaceAll
 
 -- | the regex-base polymorphic match operator
 (=~) :: ( Typeable a

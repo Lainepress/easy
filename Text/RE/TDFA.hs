@@ -72,9 +72,13 @@ import           Text.RE.Types.SearchReplace
       -> Match s
 (?=~) bs rex = addCaptureNamesToMatch (reCaptureNames rex) $ matchOnce rex bs
 
-(*=~/), (?=~/) :: IsRegex RE s => s -> SearchReplace RE s -> s
-(?=~/) = flip searchReplaceFirst -- ^ search and replace once
-(*=~/) = flip searchReplaceAll   -- ^ search and replace, all occurrences
+-- | search and replace once
+(?=~/) :: IsRegex RE s => s -> SearchReplace RE s -> s
+(?=~/) = flip searchReplaceFirst
+
+-- | search and replace, all occurrences
+(*=~/) :: IsRegex RE s => s -> SearchReplace RE s -> s
+(*=~/) = flip searchReplaceAll
 
 -- | the regex-base polymorphic match operator
 (=~) :: ( B.RegexContext TDFA.Regex s a
