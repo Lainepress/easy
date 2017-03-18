@@ -70,6 +70,7 @@ Library
     Hs-Source-Dirs:     .
     Exposed-Modules:
       Text.RE
+      Text.RE.Compendium
       Text.RE.Internal.AddCaptureNames
       Text.RE.Internal.EscapeREString
       Text.RE.Internal.NamedCaptures
@@ -96,6 +97,7 @@ Library
       Text.RE.Tools.Grep
       Text.RE.Tools.Lex
       Text.RE.Tools.Sed
+      Text.RE.Types
       Text.RE.Types.Capture
       Text.RE.Types.CaptureID
       Text.RE.Types.IsRegex

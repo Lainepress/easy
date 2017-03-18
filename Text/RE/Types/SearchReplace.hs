@@ -58,7 +58,6 @@ searchReplaceAllMany   = compose . map searchReplaceAll
 compose :: [a->a] -> a -> a
 compose = foldr (.) id
 
-
 ed
   , edMS
   , edMI
