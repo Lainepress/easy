@@ -713,7 +713,7 @@ pandoc_lhs' title repo_path in_file out_file = do
                     LBS.unlines
                       [ "---"
                       , "title: "<>LBS.fromStrict (TE.encodeUtf8 title)
-                      ,"---"
+                      , "---"
                       ]
   LBS.writeFile "tmp/bc.html" bc
   LBS.writeFile "tmp/ft.html" ft
