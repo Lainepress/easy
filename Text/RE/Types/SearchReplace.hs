@@ -26,6 +26,7 @@ import           Prelude.Compat
 -- import           Language.Haskell.TH
 -- import           Language.Haskell.TH.Quote
 -- import           Text.RE.Internal.QQ
+import           Text.RE.Types.CaptureID
 import           Text.RE.Types.IsRegex
 -- import           Text.RE.Types.Options
 import           Text.RE.Types.Replace
@@ -42,14 +43,16 @@ searchReplaceAll   SearchReplace{..} = replaceAll getTemplate . matchMany getSea
 searchReplaceFirst SearchReplace{..} = replace    getTemplate . matchOnce getSearch
 
 unsafeCompileSearchReplace_ :: (String->s)
+                            -> (re->CaptureNames)
                             -> (String->Either String re)
                             -> String
                             -> SearchReplace re s
-unsafeCompileSearchReplace_ pk cf = either err id . compileSearchReplace_ pk cf
+unsafeCompileSearchReplace_ pk xcns cf = either err id . compileSearchReplace_ pk xcns cf
   where
     err msg = error $ "unsafeCompileSearchReplace_: " ++ msg
 
 compileSearchReplace_ :: (String->s)
+                      -> (re->CaptureNames)
                       -> (String->Either String re)
                       -> String
                       -> m (SearchReplace re s)

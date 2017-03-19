@@ -260,7 +260,7 @@ ed' mb = case mb of
     parse sro mk ts = either error (\_->mk ts) ei
       where
         ei :: Either String (SearchReplace RE String)
-        ei = compileSearchReplace_ id (compileRegexWith sro) ts
+        ei = compileSearchReplace_ id reCaptureNames (compileRegexWith sro) ts
 
 unsafeCompileRegexSimple :: SimpleRegexOptions -> String -> RE
 unsafeCompileRegexSimple sro re_s = unsafeCompileRegex os re_s
@@ -277,9 +277,8 @@ unsafeCompileSearchReplaceSimple :: IsRegex RE s
                                  => SimpleRegexOptions
                                  -> String
                                  -> SearchReplace RE s
-unsafeCompileSearchReplaceSimple sro re_s = unsafeCompileSearchReplace os re_s
-  where
-    os = unpackSimpleRegexOptions sro
+unsafeCompileSearchReplaceSimple sro =
+    unsafeCompileSearchReplace $ unpackSimpleRegexOptions sro
 
 unsafeCompileSearchReplace :: ( IsOption o RE CompOption ExecOption
                               , IsRegex RE s
@@ -288,7 +287,7 @@ unsafeCompileSearchReplace :: ( IsOption o RE CompOption ExecOption
                            -> String
                            -> SearchReplace RE s
 unsafeCompileSearchReplace os =
-    unsafeCompileSearchReplace_ packE $ compileRegexWithOptions os
+    unsafeCompileSearchReplace_ packE reCaptureNames $ compileRegexWithOptions os
 
 unsafeCompileRegex_ :: Options -> String -> RE
 unsafeCompileRegex_ os = either oops id . compileRegexWithOptions os
