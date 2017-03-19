@@ -23,6 +23,16 @@ module Text.RE.TDFA.RE
   , reBlockSensitive
   , reBlockInsensitive
   , re_
+  , ed
+  , edMS
+  , edMI
+  , edBS
+  , edBI
+  , edMultilineSensitive
+  , edMultilineInsensitive
+  , edBlockSensitive
+  , edBlockInsensitive
+  , ed_
   , cp
   , regexType
   , RE
@@ -58,8 +68,10 @@ import           Text.RE.Internal.PreludeMacros
 import           Text.RE.Internal.QQ
 import           Text.RE.TestBench
 import           Text.RE.Types.CaptureID
+import           Text.RE.Types.IsRegex
 import           Text.RE.Types.Options
 import           Text.RE.Types.Replace
+import           Text.RE.Types.SearchReplace
 import           Text.Regex.TDFA
 
 
@@ -72,7 +84,17 @@ re
   , reMultilineInsensitive
   , reBlockSensitive
   , reBlockInsensitive
-  , re_ :: QuasiQuoter
+  , re_
+  , ed
+  , edMS
+  , edMI
+  , edBS
+  , edBI
+  , edMultilineSensitive
+  , edMultilineInsensitive
+  , edBlockSensitive
+  , edBlockInsensitive
+  , ed_ :: QuasiQuoter
 
 re                       = re' $ Just minBound
 reMS                     = reMultilineSensitive
@@ -84,6 +106,17 @@ reMultilineInsensitive   = re' $ Just  MultilineInsensitive
 reBlockSensitive         = re' $ Just  BlockSensitive
 reBlockInsensitive       = re' $ Just  BlockInsensitive
 re_                      = re'   Nothing
+
+ed                       = ed' $ Just minBound
+edMS                     = edMultilineSensitive
+edMI                     = edMultilineInsensitive
+edBS                     = edBlockSensitive
+edBI                     = edBlockInsensitive
+edMultilineSensitive     = ed' $ Just  MultilineSensitive
+edMultilineInsensitive   = ed' $ Just  MultilineInsensitive
+edBlockSensitive         = ed' $ Just  BlockSensitive
+edBlockInsensitive       = ed' $ Just  BlockInsensitive
+ed_                      = ed'   Nothing
 
 regexType :: RegexType
 regexType =
@@ -192,11 +225,11 @@ compileRegex_ os re_s = uncurry mk <$> compileRegex' os re_s
 re' :: Maybe SimpleRegexOptions -> QuasiQuoter
 re' mb = case mb of
   Nothing  ->
-    (qq0 "re_")
+    (qq0 "re'")
       { quoteExp = parse minBound (\rs->[|flip unsafeCompileRegex rs|])
       }
   Just sro ->
-    (qq0 "re")
+    (qq0 "re'")
       { quoteExp = parse sro (\rs->[|unsafeCompileRegexSimple sro rs|])
       }
   where
@@ -204,6 +237,23 @@ re' mb = case mb of
     parse sro mk rs = either error (\_->mk rs) $ compileRegex_ os rs
       where
         os = unpackSimpleRegexOptions sro
+
+ed' :: Maybe SimpleRegexOptions -> QuasiQuoter
+ed' mb = case mb of
+  Nothing  ->
+    (qq0 "ed'")
+      { quoteExp = parse minBound (\rs->[|flip unsafeCompileSearchReplace rs|])
+      }
+  Just sro ->
+    (qq0 "ed'")
+      { quoteExp = parse sro (\rs->[|unsafeCompileSearchReplaceSimple sro rs|])
+      }
+  where
+    parse :: SimpleRegexOptions -> (String->Q Exp) -> String -> Q Exp
+    parse sro mk ts = either error (\_->mk ts) ei
+      where
+        ei :: Either String (SearchReplace RE String)
+        ei = compileSearchReplace_ id (compileRegexWith sro) ts
 
 unsafeCompileRegexSimple :: SimpleRegexOptions -> String -> RE
 unsafeCompileRegexSimple sro re_s = unsafeCompileRegex_ os re_s
@@ -215,6 +265,23 @@ unsafeCompileRegex :: IsOption o RE CompOption ExecOption
                    -> String
                    -> RE
 unsafeCompileRegex = unsafeCompileRegex_ . makeOptions
+
+unsafeCompileSearchReplaceSimple :: IsRegex RE s
+                                 => SimpleRegexOptions
+                                 -> String
+                                 -> SearchReplace RE s
+unsafeCompileSearchReplaceSimple sro re_s = unsafeCompileSearchReplace os re_s
+  where
+    os = unpackSimpleRegexOptions sro
+
+unsafeCompileSearchReplace :: ( IsOption o RE CompOption ExecOption
+                              , IsRegex RE s
+                              )
+                           => o
+                           -> String
+                           -> SearchReplace RE s
+unsafeCompileSearchReplace os =
+    unsafeCompileSearchReplace_ packE $ compileRegexWithOptions os
 
 unsafeCompileRegex_ :: Options -> String -> RE
 unsafeCompileRegex_ os = either oops id . compileRegex_ os

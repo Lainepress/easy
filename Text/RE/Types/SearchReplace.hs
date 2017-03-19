@@ -18,26 +18,16 @@ module Text.RE.Types.SearchReplace
     SearchReplace(..)
   , searchReplaceFirst
   , searchReplaceAll
-  , searchReplaceFirstMany
-  , searchReplaceAllMany
-  -- * The QuasiQuoters
-  , ed
-  , edMS
-  , edMI
-  , edBS
-  , edBI
-  , edMultilineSensitive
-  , edMultilineInsensitive
-  , edBlockSensitive
-  , edBlockInsensitive
-  , ed_
+  , unsafeCompileSearchReplace_
+  , compileSearchReplace_
   ) where
 
 import           Prelude.Compat
---import           Language.Haskell.TH
-import           Language.Haskell.TH.Quote
+-- import           Language.Haskell.TH
+-- import           Language.Haskell.TH.Quote
+-- import           Text.RE.Internal.QQ
 import           Text.RE.Types.IsRegex
-import           Text.RE.Types.Options
+-- import           Text.RE.Types.Options
 import           Text.RE.Types.Replace
 
 
@@ -51,34 +41,66 @@ searchReplaceAll, searchReplaceFirst :: IsRegex re s => SearchReplace re s -> s 
 searchReplaceAll   SearchReplace{..} = replaceAll getTemplate . matchMany getSearch
 searchReplaceFirst SearchReplace{..} = replace    getTemplate . matchOnce getSearch
 
-searchReplaceFirstMany, searchReplaceAllMany :: IsRegex re s => [SearchReplace re s] -> s -> s
-searchReplaceFirstMany = compose . map searchReplaceFirst
-searchReplaceAllMany   = compose . map searchReplaceAll
+unsafeCompileSearchReplace_ :: (String->s)
+                            -> (String->Either String re)
+                            -> String
+                            -> SearchReplace re s
+unsafeCompileSearchReplace_ pk cf = either err id . compileSearchReplace_ pk cf
+  where
+    err msg = error $ "unsafeCompileSearchReplace_: " ++ msg
 
-compose :: [a->a] -> a -> a
-compose = foldr (.) id
+compileSearchReplace_ :: (String->s)
+                      -> (String->Either String re)
+                      -> String
+                      -> m (SearchReplace re s)
+compileSearchReplace_ = undefined
 
-ed
-  , edMS
-  , edMI
-  , edBS
-  , edBI
-  , edMultilineSensitive
-  , edMultilineInsensitive
-  , edBlockSensitive
-  , edBlockInsensitive
-  , ed_ :: QuasiQuoter
 
-ed                       = ed' $ Just minBound
-edMS                     = edMultilineSensitive
-edMI                     = edMultilineInsensitive
-edBS                     = edBlockSensitive
-edBI                     = edBlockInsensitive
-edMultilineSensitive     = ed' $ Just  MultilineSensitive
-edMultilineInsensitive   = ed' $ Just  MultilineInsensitive
-edBlockSensitive         = ed' $ Just  BlockSensitive
-edBlockInsensitive       = ed' $ Just  BlockInsensitive
-ed_                      = ed'   Nothing
+{-
 
-ed' :: Maybe SimpleRegexOptions -> QuasiQuoter
-ed' = undefined
+
+
+
+searchReplaceQQParser :: (SimpleRegexOptions->String->Either String re)
+                      -> (String -> s)
+                      -> Maybe SimpleRegexOptions
+                      -> QuasiQuoter
+searchReplaceQQParser compile_re pack mb = case mb of
+  Nothing  -> undefined
+    -- (qq0 "searchReplaceQQParser")
+    --   { quoteExp = parse minBound (\rs->[|flip (unsafe_compile_search_replace compile_re pack) rs|])
+    --   }
+  Just sro ->
+    (qq0 "searchReplaceQQParser")
+      { quoteExp = parse sro (\ts->[| foo undefined undefined undefined ts |])
+      }
+  where
+    parse :: SimpleRegexOptions -> (String->Q Exp) -> String -> Q Exp
+    parse sro mk ts = either error (\_->mk ts) $ compile_search_replace compile_re pack sro ts
+
+    foo :: (SimpleRegexOptions->String->Bool) -> (String->s) -> SimpleRegexOptions -> String -> SearchReplace re s
+    foo compile_re_ pack_ sro ts = undefined
+
+    check_re :: SimpleRegexOptions -> String -> Bool
+    check_re = undefined
+
+
+      -- unsafe_compile_search_replace undefined pack_ sro ts
+
+unsafe_compile_search_replace :: (SimpleRegexOptions->String->Maybe String)
+                              -> (String->s)
+                              -> SimpleRegexOptions
+                              -> String
+                              -> SearchReplace re s
+unsafe_compile_search_replace compile_regex pack sro = undefined
+  --   either err id . compile_search_replace compile_regex pack sro
+  -- where
+  --   err msg = error $ "unsafe_compile_search_replace: " ++ msg
+
+compile_search_replace :: (SimpleRegexOptions->String->Either String re)
+                       -> (String->s)
+                       -> SimpleRegexOptions
+                       -> String
+                       -> Either String (SearchReplace re s)
+compile_search_replace = undefined
+-}

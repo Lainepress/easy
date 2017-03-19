@@ -1,4 +1,4 @@
-module Text.RE.Compendium
+module Text.RE.Summa
   ( module Text.RE.TestBench
   , module Text.RE.Tools
   , module Text.RE.Types

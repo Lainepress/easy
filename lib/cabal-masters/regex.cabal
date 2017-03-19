@@ -6,7 +6,7 @@ Library
     Hs-Source-Dirs:     .
     Exposed-Modules:
       Text.RE
-      Text.RE.Compendium
+      Text.RE.Summa
       Text.RE.Internal.AddCaptureNames
       Text.RE.Internal.EscapeREString
       Text.RE.Internal.NamedCaptures
