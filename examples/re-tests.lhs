@@ -599,6 +599,16 @@ misc_tests = testGroup "Miscelaneous Tests"
             , TDFA.reBlockSensitive
             , TDFA.reBlockInsensitive
             , TDFA.re_
+            , TDFA.ed
+            , TDFA.edMS
+            , TDFA.edMI
+            , TDFA.edBS
+            , TDFA.edBI
+            , TDFA.edMultilineSensitive
+            , TDFA.edMultilineInsensitive
+            , TDFA.edBlockSensitive
+            , TDFA.edBlockInsensitive
+            , TDFA.ed_
             ]
         , testCase  "TDFA.regexType"           $ assertBool "TDFA" $ isTDFA TDFA.regexType
         , testCase  "TDFA.reOptions"           $ assert_empty_macs $ optionsMacs (TDFA.reOptions tdfa_re)
@@ -627,6 +637,16 @@ misc_tests = testGroup "Miscelaneous Tests"
             , PCRE.reBlockSensitive
             , PCRE.reBlockInsensitive
             , PCRE.re_
+            , PCRE.ed
+            , PCRE.edMS
+            , PCRE.edMI
+            , PCRE.edBS
+            , PCRE.edBI
+            , PCRE.edMultilineSensitive
+            , PCRE.edMultilineInsensitive
+            , PCRE.edBlockSensitive
+            , PCRE.edBlockInsensitive
+            , PCRE.ed_
             ]
         , testCase  "PCRE.regexType"           $ assertBool "PCRE" $ isPCRE PCRE.regexType
         , testCase  "PCRE.reOptions"           $ assert_empty_macs $ optionsMacs (PCRE.reOptions pcre_re)
