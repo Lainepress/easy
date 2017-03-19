@@ -39,7 +39,7 @@ cp =
       { quoteExp = parse_capture
       }
 
-extractNamedCaptures :: String -> Either String (CaptureNames,String)
+extractNamedCaptures :: String -> Either String ((Int,CaptureNames),String)
 extractNamedCaptures s = Right (analyseTokens tks,formatTokens tks)
   where
     tks = scan s
@@ -79,11 +79,13 @@ Analysing [Token] -> CaptureNames
 ---------------------------------
 
 \begin{code}
-analyseTokens :: [Token] -> CaptureNames
-analyseTokens = HM.fromList . count_em 1
+analyseTokens :: [Token] -> (Int,CaptureNames)
+analyseTokens tks0 = case count_em 1 tks0 of
+    (n,as) -> (n-1, HM.fromList as)
   where
-    count_em _ []       = []
-    count_em n (tk:tks) = bd ++ count_em (n `seq` n+d) tks
+    count_em n []       = (n,[])
+    count_em n (tk:tks) = case count_em (n `seq` n+d) tks of
+        (n',as) -> (n',bd++as)
       where
         (d,bd) = case tk of
           ECap (Just nm) -> (,) 1 [(CaptureName $ T.pack nm,CaptureOrdinal n)]

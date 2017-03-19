@@ -22,14 +22,15 @@ module Text.RE.Types.SearchReplace
   , compileSearchReplace_
   ) where
 
+import qualified Data.HashMap.Strict            as HMS
 import           Prelude.Compat
--- import           Language.Haskell.TH
--- import           Language.Haskell.TH.Quote
--- import           Text.RE.Internal.QQ
+import           Text.RE.Internal.NamedCaptures
+import           Text.RE.Types.Capture
 import           Text.RE.Types.CaptureID
 import           Text.RE.Types.IsRegex
--- import           Text.RE.Types.Options
+import           Text.RE.Types.Matches
 import           Text.RE.Types.Replace
+import qualified Text.Regex.TDFA                as TDFA
 
 
 data SearchReplace re s =
@@ -38,72 +39,58 @@ data SearchReplace re s =
     , getTemplate :: !s
     }
 
+-- | search and replace
 searchReplaceAll, searchReplaceFirst :: IsRegex re s => SearchReplace re s -> s -> s
 searchReplaceAll   SearchReplace{..} = replaceAll getTemplate . matchMany getSearch
 searchReplaceFirst SearchReplace{..} = replace    getTemplate . matchOnce getSearch
 
+-- | warapper on 'compileSearchReplace_' that will generate an error
+-- if any compilation errors are found
 unsafeCompileSearchReplace_ :: (String->s)
-                            -> (re->CaptureNames)
                             -> (String->Either String re)
                             -> String
                             -> SearchReplace re s
-unsafeCompileSearchReplace_ pk xcns cf = either err id . compileSearchReplace_ pk xcns cf
+unsafeCompileSearchReplace_ pk cf = either err id . compileSearchReplace_ pk cf
   where
     err msg = error $ "unsafeCompileSearchReplace_: " ++ msg
 
-compileSearchReplace_ :: (String->s)
-                      -> (re->CaptureNames)
+-- | compile a SearchReplace template generating errors if the RE or
+-- the tempate are not well formed -- all capture references being checked
+compileSearchReplace_ :: (Monad m,Functor m)
+                      => (String->s)
                       -> (String->Either String re)
                       -> String
                       -> m (SearchReplace re s)
-compileSearchReplace_ = undefined
+compileSearchReplace_ pack compile_re sr_tpl = either fail return $ do
+    case mainCaptures $ sr_tpl $=~ "\\]/\\[" of
+      [cap] -> compile_sr pack compile_re (capturePrefix cap) (captureSuffix cap)
+      _      -> Left $ "bad search-replace template syntax: " ++ sr_tpl
 
-
-{-
-
-
-
-
-searchReplaceQQParser :: (SimpleRegexOptions->String->Either String re)
-                      -> (String -> s)
-                      -> Maybe SimpleRegexOptions
-                      -> QuasiQuoter
-searchReplaceQQParser compile_re pack mb = case mb of
-  Nothing  -> undefined
-    -- (qq0 "searchReplaceQQParser")
-    --   { quoteExp = parse minBound (\rs->[|flip (unsafe_compile_search_replace compile_re pack) rs|])
-    --   }
-  Just sro ->
-    (qq0 "searchReplaceQQParser")
-      { quoteExp = parse sro (\ts->[| foo undefined undefined undefined ts |])
-      }
+compile_sr :: (String->s)
+           -> (String->Either String re)
+           -> String
+           -> String
+           -> Either String (SearchReplace re s)
+compile_sr pack compile_re re_s tpl = do
+    re           <- compile_re re_s
+    ((n,cnms),_) <- extractNamedCaptures re_s
+    mapM_ (check n cnms) $ templateCaptures id tpl
+    return $ SearchReplace re $ pack tpl
   where
-    parse :: SimpleRegexOptions -> (String->Q Exp) -> String -> Q Exp
-    parse sro mk ts = either error (\_->mk ts) $ compile_search_replace compile_re pack sro ts
+    check :: Int -> CaptureNames -> CaptureID -> Either String ()
+    check n cnms cid = case cid of
+      IsCaptureOrdinal co -> check_co n    co
+      IsCaptureName    cn -> check_cn cnms cn
 
-    foo :: (SimpleRegexOptions->String->Bool) -> (String->s) -> SimpleRegexOptions -> String -> SearchReplace re s
-    foo compile_re_ pack_ sro ts = undefined
+    check_co n (CaptureOrdinal i) = case i <= n of
+      True  -> return ()
+      False -> Left $ "capture ordinal out of range: " ++
+                                      show i ++ " >= " ++ show n
 
-    check_re :: SimpleRegexOptions -> String -> Bool
-    check_re = undefined
+    check_cn cnms cnm = case cnm `HMS.member` cnms of
+      True  -> return ()
+      False -> Left $ "capture name not defined: " ++
+                                      show (getCaptureName cnm)
 
-
-      -- unsafe_compile_search_replace undefined pack_ sro ts
-
-unsafe_compile_search_replace :: (SimpleRegexOptions->String->Maybe String)
-                              -> (String->s)
-                              -> SimpleRegexOptions
-                              -> String
-                              -> SearchReplace re s
-unsafe_compile_search_replace compile_regex pack sro = undefined
-  --   either err id . compile_search_replace compile_regex pack sro
-  -- where
-  --   err msg = error $ "unsafe_compile_search_replace: " ++ msg
-
-compile_search_replace :: (SimpleRegexOptions->String->Either String re)
-                       -> (String->s)
-                       -> SimpleRegexOptions
-                       -> String
-                       -> Either String (SearchReplace re s)
-compile_search_replace = undefined
--}
+($=~) :: String -> String -> Matches String
+($=~) = (TDFA.=~)

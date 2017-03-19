@@ -45,7 +45,6 @@ import qualified Text.RE.TDFA.Text                        as TT
 import           Text.RE.Types.Capture
 import           Text.RE.Types.Match
 import           Text.RE.Types.Replace
-import           Text.RE.Types.SearchReplace
 \end{code}
 
 \begin{code}
@@ -768,10 +767,10 @@ tweak_md :: MarkdownMode -> LBS.ByteString -> LBS.ByteString
 tweak_md mm lbs = case mm of
     MM_github  -> lbs
     MM_pandoc  -> awk
-      [ Template $ SearchReplace [re|<https?://${rest}([^)]+)>|] "[${rest}]($0)"
+      [ Template [ed|<https?://${rest}([^)]+)>]/[[${rest}]($0)|]
       ]
     MM_hackage -> awk
-      [ Template $ SearchReplace [re|<br/>$|] "\n"
+      [ Template [ed|<br/>$]/[\n|]
       ]
   where
     awk = fromMaybe oops . flip sed' lbs . Pipe

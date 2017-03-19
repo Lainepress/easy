@@ -520,7 +520,7 @@ analyseTokensTestTree =
               ]
         )
 
-    xnc = either oops fst . extractNamedCaptures
+    xnc = either oops (snd . fst) . extractNamedCaptures
       where
         oops = error "analyseTokensTestTree: unexpected parse failure"
 \end{code}
