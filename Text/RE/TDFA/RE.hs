@@ -54,6 +54,8 @@ module Text.RE.TDFA.RE
   , compileRegex
   , compileRegexWith
   , compileRegexWithOptions
+  , unsafeCompileSearchReplaceSimple
+  , unsafeCompileSearchReplace
   , escape
   , escapeREString
   ) where

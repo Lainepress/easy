@@ -1,6 +1,7 @@
 \begin{code}
 {-# LANGUAGE NoImplicitPrelude          #-}
 {-# LANGUAGE RecordWildCards            #-}
+{-# LANGUAGE DeriveFunctor              #-}
 {-# LANGUAGE CPP                        #-}
 #if __GLASGOW_HASKELL__ >= 800
 {-# OPTIONS_GHC -fno-warn-redundant-constraints #-}
@@ -54,7 +55,8 @@ data LineEdit s
   = NoEdit
   | ReplaceWith !s
   | Delete
-  deriving (Show)
+  deriving (Functor,Show)
+
 
 -- | apply an 'Edit' script to a single line
 applyEdits :: (IsRegex re s,Monad m,Functor m)

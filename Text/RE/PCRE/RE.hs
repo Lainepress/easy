@@ -54,6 +54,8 @@ module Text.RE.PCRE.RE
   , compileRegex
   , compileRegexWith
   , compileRegexWithOptions
+  , unsafeCompileSearchReplaceSimple
+  , unsafeCompileSearchReplace
   , escape
   , escapeREString
   ) where

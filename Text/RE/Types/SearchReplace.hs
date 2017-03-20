@@ -39,6 +39,9 @@ data SearchReplace re s =
     , getTemplate :: !s
     }
 
+instance Functor (SearchReplace re) where
+  fmap f (SearchReplace re x) = SearchReplace re (f x)
+
 -- | search and replace
 searchReplaceAll, searchReplaceFirst :: IsRegex re s => SearchReplace re s -> s -> s
 searchReplaceAll   SearchReplace{..} = replaceAll getTemplate . matchMany getSearch

@@ -16,6 +16,7 @@ regressions.
 {-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE FlexibleContexts           #-}
 {-# OPTIONS_GHC -fno-warn-orphans       #-}
 
 module Main (main) where
@@ -50,9 +51,9 @@ import           Text.RE.Internal.QQ
 import qualified Text.RE.PCRE                   as PCRE
 import           Text.RE.TDFA                   as TDFA
 import           Text.RE.TestBench
+import           Text.RE.Tools.Sed
 import           Text.RE.Types.Capture
 import           Text.RE.Types.CaptureID
-import           Text.RE.Types.IsRegex
 import           Text.RE.Types.Match
 import           Text.RE.Types.Matches
 import           Text.RE.Types.Options
@@ -80,6 +81,7 @@ main = defaultMain $
     , parsing_tests
     , core_tests
     , replaceMethodstests
+    , searchReplaceReplaceTests
     , options_tests
     , namedCapturesTestTree
     , many_tests
@@ -337,6 +339,47 @@ replaceMethodstests = testGroup "Replace"
 
     show_co (CaptureOrdinal j) = show j
 \end{code}
+
+
+<h3>SearchReplace</h3>
+
+\begin{code}
+searchReplaceReplaceTests :: TestTree
+searchReplaceReplaceTests = testGroup "SearchReplace"
+    [ testCase "TDFA.ed/String" $ test id         tdfa_eds
+    , testCase "PCRE.ed/String" $ test id         pcre_eds
+    , testCase "TDFA.ed/B"      $ test B.pack     tdfa_eds
+    , testCase "PCRE.ed/B"      $ test B.pack     pcre_eds
+    , testCase "TDFA.ed/LBS"    $ test LBS.pack   tdfa_eds
+    , testCase "PCRE.ed/LBS"    $ test LBS.pack   pcre_eds
+    , testCase "TDFA.ed/S"      $ test S.fromList tdfa_eds
+    , testCase "PCRE.ed/S"      $ test S.fromList pcre_eds
+    , testCase "TDFA.ed/T"      $ test T.pack     tdfa_eds
+    , testCase "TDFA.ed/LT"     $ test LT.pack    tdfa_eds
+    , testCase "TDFA.ed/T(d)"   $ test T.pack     tdfa_eds'
+    , testCase "PCRE.ed/LBS(d)" $ test LBS.pack   pcre_eds'
+    ]
+  where
+    test inj eds = runIdentity (sed' eds $ inj inp) @=? inj rslt
+
+    inp, rslt :: String
+    inp  = "2017-03-16\n"
+    rslt = "2017/03/16\n"
+
+    tdfa_eds :: IsRegex TDFA.RE a => Edits Identity TDFA.RE a
+    tdfa_eds = Select [Template [TDFA.ed|${y}([0-9]{4})-${m}([0-9]{2})-${d}([0-9]{2})]/[${y}/${m}/${d}|]]
+
+    pcre_eds :: IsRegex PCRE.RE a => Edits Identity PCRE.RE a
+    pcre_eds = Select [Template [PCRE.ed|${y}([0-9]{4})-${m}([0-9]{2})-${d}([0-9]{2})]/[${y}/${m}/${d}|]]
+
+    tdfa_eds' :: IsRegex TDFA.RE a => Edits Identity TDFA.RE a
+    tdfa_eds' = Select [Template $ TDFA.unsafeCompileSearchReplaceSimple minBound "${y}([0-9]{4})-${m}([0-9]{2})-${d}([0-9]{2})]/[${y}/${m}/${d}"]
+
+    pcre_eds' :: IsRegex PCRE.RE a => Edits Identity PCRE.RE a
+    pcre_eds' = Select [Template $ PCRE.unsafeCompileSearchReplaceSimple minBound "${y}([0-9]{4})-${m}([0-9]{2})-${d}([0-9]{2})]/[${y}/${m}/${d}"]
+
+\end{code}
+
 
 <h3>Testing The Options</h3>
 
@@ -720,4 +763,13 @@ tdfa_prelude_macros = [minBound..maxBound]
 
 s_toList :: S.Seq Char -> [Char]
 s_toList = F.toList
+
+newtype Identity a = Identity { runIdentity :: a }
+
+instance Functor Identity where
+  fmap f (Identity x) = Identity $ f x
+
+instance Monad Identity where
+  return = Identity
+  (>>=) (Identity x) f = f x
 \end{code}
