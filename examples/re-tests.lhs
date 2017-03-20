@@ -17,6 +17,10 @@ regressions.
 {-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE FlexibleContexts           #-}
+{-# LANGUAGE DeriveFunctor              #-}
+{-# LANGUAGE StandaloneDeriving         #-}
+
+
 {-# OPTIONS_GHC -fno-warn-orphans       #-}
 
 module Main (main) where
@@ -765,9 +769,11 @@ s_toList :: S.Seq Char -> [Char]
 s_toList = F.toList
 
 newtype Identity a = Identity { runIdentity :: a }
+  deriving (Functor)
 
-instance Functor Identity where
-  fmap f (Identity x) = Identity $ f x
+instance Applicative Identity where
+  pure = Identity
+  (<*>) (Identity f) (Identity x) = Identity $ f x
 
 instance Monad Identity where
   return = Identity
