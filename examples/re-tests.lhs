@@ -19,13 +19,10 @@ regressions.
 {-# LANGUAGE FlexibleContexts           #-}
 {-# LANGUAGE DeriveFunctor              #-}
 {-# LANGUAGE StandaloneDeriving         #-}
-
-
 {-# OPTIONS_GHC -fno-warn-orphans       #-}
 
 module Main (main) where
 
-import           Control.Exception
 import           Data.Array
 import qualified Data.ByteString.Char8          as B
 import qualified Data.ByteString.Lazy.Char8     as LBS
@@ -51,7 +48,6 @@ import           Text.RE
 import           Text.RE.Internal.AddCaptureNames
 import           Text.RE.Internal.NamedCaptures
 import           Text.RE.Internal.PreludeMacros
-import           Text.RE.Internal.QQ
 import qualified Text.RE.PCRE                   as PCRE
 import           Text.RE.TDFA                   as TDFA
 import           Text.RE.TestBench
@@ -621,10 +617,26 @@ The Miscelaneous Tests
 misc_tests :: TestTree
 misc_tests = testGroup "Miscelaneous Tests"
     [ testGroup "QQ"
-        [ qq_tc "expression"  quoteExp
-        , qq_tc "pattern"     quotePat
-        , qq_tc "type"        quoteType
-        , qq_tc "declaration" quoteDec
+        [ qq_tc "re"                      re
+        , qq_tc "reMS"                    reMS
+        , qq_tc "reMI"                    reMI
+        , qq_tc "reBS"                    reBS
+        , qq_tc "reBI"                    reBI
+        , qq_tc "reMultilineSensitive"    reMultilineSensitive
+        , qq_tc "reMultilineInsensitive"  reMultilineInsensitive
+        , qq_tc "reBlockSensitive"        reBlockSensitive
+        , qq_tc "reBlockInsensitive"      reBlockInsensitive
+        , qq_tc "re_"                     re_
+        , qq_tc "ed"                      ed
+        , qq_tc "edMS"                    edMS
+        , qq_tc "edMI"                    edMI
+        , qq_tc "edBS"                    edBS
+        , qq_tc "edBI"                    edBI
+        , qq_tc "edMultilineSensitive"    edMultilineSensitive
+        , qq_tc "edMultilineInsensitive"  edMultilineInsensitive
+        , qq_tc "edBlockSensitive"        edBlockSensitive
+        , qq_tc "edBlockInsensitive"      edBlockInsensitive
+        , qq_tc "ed_"                     ed_
         ]
     , testGroup "PreludeMacros"
         [ valid_string "preludeMacroTable"    preludeMacroTable
@@ -725,17 +737,8 @@ misc_tests = testGroup "Miscelaneous Tests"
 
     assert_empty_macs = assertBool "macros not empty" . HM.null
 
-qq_tc :: String -> (QuasiQuoter->String->a) -> TestTree
-qq_tc sc prj = testCase sc $
-    try tst >>= either hdl (const $ assertFailure "qq0")
-  where
-    tst :: IO ()
-    tst = prj (qq0 "qq_tc") "" `seq` return ()
-
-    hdl :: QQFailure -> IO ()
-    hdl qqf = do
-      "qq_tc" @=? _qqf_context   qqf
-      sc      @=? _qqf_component qqf
+qq_tc :: String -> QuasiQuoter -> TestTree
+qq_tc lab qq = testCase lab $ quoteExp qq `seq` assertBool "qq_tc" True
 
 valid_macro :: String -> (RegexType->PreludeMacro->String) -> TestTree
 valid_macro label f = testGroup label
