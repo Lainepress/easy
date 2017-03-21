@@ -767,10 +767,10 @@ tweak_md :: MarkdownMode -> LBS.ByteString -> LBS.ByteString
 tweak_md mm lbs = case mm of
     MM_github  -> lbs
     MM_pandoc  -> awk
-      [ Template [ed|<https?://${rest}([^)]+)>]/[[${rest}]($0)|]
+      [ Template [ed|<https?://${rest}([^)]+)>///[${rest}]($0)|]
       ]
     MM_hackage -> awk
-      [ Template [ed|<br/>$]/[\n|]
+      [ Template [ed|<br/>$///\n|]
       ]
   where
     awk = fromMaybe oops . flip sed' lbs . Pipe

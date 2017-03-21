@@ -65,7 +65,7 @@ compileSearchReplace_ :: (Monad m,Functor m)
                       -> String
                       -> m (SearchReplace re s)
 compileSearchReplace_ pack compile_re sr_tpl = either fail return $ do
-    case mainCaptures $ sr_tpl $=~ "\\]/\\[" of
+    case mainCaptures $ sr_tpl $=~ "///" of
       [cap] -> compile_sr pack compile_re (capturePrefix cap) (captureSuffix cap)
       _      -> Left $ "bad search-replace template syntax: " ++ sr_tpl
 

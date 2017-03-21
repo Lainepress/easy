@@ -58,6 +58,7 @@ import           Text.RE.Types.Match
 import           Text.RE.Types.Matches
 import           Text.RE.Types.Options
 import           Text.RE.Types.Replace
+import           Text.RE.Types.SearchReplace
 
 import qualified Text.RE.PCRE.String            as P_ST
 import qualified Text.RE.PCRE.ByteString        as P_BS
@@ -346,37 +347,65 @@ replaceMethodstests = testGroup "Replace"
 \begin{code}
 searchReplaceReplaceTests :: TestTree
 searchReplaceReplaceTests = testGroup "SearchReplace"
-    [ testCase "TDFA.ed/String" $ test id         tdfa_eds
-    , testCase "PCRE.ed/String" $ test id         pcre_eds
-    , testCase "TDFA.ed/B"      $ test B.pack     tdfa_eds
-    , testCase "PCRE.ed/B"      $ test B.pack     pcre_eds
-    , testCase "TDFA.ed/LBS"    $ test LBS.pack   tdfa_eds
-    , testCase "PCRE.ed/LBS"    $ test LBS.pack   pcre_eds
-    , testCase "TDFA.ed/S"      $ test S.fromList tdfa_eds
-    , testCase "PCRE.ed/S"      $ test S.fromList pcre_eds
-    , testCase "TDFA.ed/T"      $ test T.pack     tdfa_eds
-    , testCase "TDFA.ed/LT"     $ test LT.pack    tdfa_eds
-    , testCase "TDFA.ed/T(d)"   $ test T.pack     tdfa_eds'
-    , testCase "PCRE.ed/LBS(d)" $ test LBS.pack   pcre_eds'
+    [ testCase "TDFA.ed/String" $ test  id         tdfa_eds
+    , testCase "PCRE.ed/String" $ test  id         pcre_eds
+    , testCase "TDFA.ed/B"      $ test  B.pack     tdfa_eds
+    , testCase "PCRE.ed/B"      $ test  B.pack     pcre_eds
+    , testCase "TDFA.ed/LBS"    $ test  LBS.pack   tdfa_eds
+    , testCase "PCRE.ed/LBS"    $ test  LBS.pack   pcre_eds
+    , testCase "TDFA.ed/S"      $ test  S.fromList tdfa_eds
+    , testCase "PCRE.ed/S"      $ test  S.fromList pcre_eds
+    , testCase "TDFA.ed/T"      $ test  T.pack     tdfa_eds
+    , testCase "TDFA.ed/LT"     $ test  LT.pack    tdfa_eds
+    , testCase "TDFA.ed/T(d)"   $ test  T.pack     tdfa_eds'
+    , testCase "PCRE.ed/LBS(d)" $ test  LBS.pack   pcre_eds'
+    , testg "TDFA.op/String" (T_ST.?=~/) (T_ST.*=~/) tdfa_sr
+    , testg "PCRE.op/String" (P_ST.?=~/) (P_ST.*=~/) pcre_sr
+    , testg "TDFA.op/B"      (T_BS.?=~/) (T_BS.*=~/) tdfa_sr
+    , testg "PCRE.op/B"      (P_BS.?=~/) (P_BS.*=~/) pcre_sr
+    , testg "TDFA.op/LBS"    (TLBS.?=~/) (TLBS.*=~/) tdfa_sr
+    , testg "PCRE.op/LBS"    (PLBS.?=~/) (PLBS.*=~/) pcre_sr
+    , testg "TDFA.op/T"      (T_TX.?=~/) (T_TX.*=~/) tdfa_sr
+    , testg "TDFA.op/LT"     (TLTX.?=~/) (TLTX.*=~/) tdfa_sr
+    , testG "TDFA.op/S"      (T_SQ.?=~/) (T_SQ.*=~/) tdfa_sr
+    , testG "PCRE.op/S"      (P_SQ.?=~/) (P_SQ.*=~/) pcre_sr
     ]
   where
-    test inj eds = runIdentity (sed' eds $ inj inp) @=? inj rslt
+    test :: IsRegex re a => (String->a) -> Edits Identity re a -> Assertion
+    test inj eds =  inj rsm @=? runIdentity (sed' eds $ inj inp)
 
-    inp, rslt :: String
-    inp  = "2017-03-16\n"
-    rslt = "2017/03/16\n"
+    testg lab op1 opm sr = testGroup lab
+      [ testCase "?=~/" $ rs1 @=? inp `op1` sr
+      , testCase "*=~/" $ rsm @=? inp `opm` sr
+      ]
+
+    testG lab op1 opm sr = testGroup lab
+      [ testCase "?=~/" $ S.fromList rs1 @=? S.fromList inp `op1` sr
+      , testCase "*=~/" $ S.fromList rsm @=? S.fromList inp `opm` sr
+      ]
+
+    inp, rs1, rsm :: IsString a => a
+    inp = "16/03/2017 01/01/2000\n"
+    rs1 = "2017-03-16 01/01/2000\n"
+    rsm = "2017-03-16 2000-01-01\n"
 
     tdfa_eds :: IsRegex TDFA.RE a => Edits Identity TDFA.RE a
-    tdfa_eds = Select [Template [TDFA.ed|${y}([0-9]{4})-${m}([0-9]{2})-${d}([0-9]{2})]/[${y}/${m}/${d}|]]
+    tdfa_eds = Select [Template tdfa_sr]
 
     pcre_eds :: IsRegex PCRE.RE a => Edits Identity PCRE.RE a
-    pcre_eds = Select [Template [PCRE.ed|${y}([0-9]{4})-${m}([0-9]{2})-${d}([0-9]{2})]/[${y}/${m}/${d}|]]
+    pcre_eds = Select [Template pcre_sr]
+
+    tdfa_sr  :: IsRegex TDFA.RE a => SearchReplace TDFA.RE a
+    tdfa_sr  = [TDFA.ed|${d}([0-9]{2})/${m}([0-9]{2})/${y}([0-9]{4})///${y}-${m}-${d}|]
+
+    pcre_sr  :: IsRegex PCRE.RE a => SearchReplace PCRE.RE a
+    pcre_sr  = [PCRE.ed|${d}([0-9]{2})/${m}([0-9]{2})/${y}([0-9]{4})///${y}-${m}-${d}|]
 
     tdfa_eds' :: IsRegex TDFA.RE a => Edits Identity TDFA.RE a
-    tdfa_eds' = Select [Template $ TDFA.unsafeCompileSearchReplaceSimple minBound "${y}([0-9]{4})-${m}([0-9]{2})-${d}([0-9]{2})]/[${y}/${m}/${d}"]
+    tdfa_eds' = Select [Template $ TDFA.unsafeCompileSearchReplaceSimple minBound "${d}([0-9]{2})/${m}([0-9]{2})/${y}([0-9]{4})///${y}-${m}-${d}"]
 
     pcre_eds' :: IsRegex PCRE.RE a => Edits Identity PCRE.RE a
-    pcre_eds' = Select [Template $ PCRE.unsafeCompileSearchReplaceSimple minBound "${y}([0-9]{4})-${m}([0-9]{2})-${d}([0-9]{2})]/[${y}/${m}/${d}"]
+    pcre_eds' = Select [Template $ PCRE.unsafeCompileSearchReplaceSimple minBound "${d}([0-9]{2})/${m}([0-9]{2})/${y}([0-9]{4})///${y}-${m}-${d}"]
 
 \end{code}
 
