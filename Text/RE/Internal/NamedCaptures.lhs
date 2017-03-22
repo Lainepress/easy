@@ -1,8 +1,13 @@
 \begin{code}
-{-# LANGUAGE QuasiQuotes                #-}
-{-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE RecordWildCards            #-}
+{-# LANGUAGE CPP                        #-}
+#if __GLASGOW_HASKELL__ >= 800
+{-# LANGUAGE TemplateHaskellQuotes      #-}
+#else
+{-# LANGUAGE QuasiQuotes                #-}
+{-# LANGUAGE TemplateHaskell            #-}
+#endif
 
 module Text.RE.Internal.NamedCaptures
   ( cp
@@ -22,7 +27,6 @@ import qualified Data.Text                    as T
 import           GHC.Generics
 import qualified Language.Haskell.TH          as TH
 import           Language.Haskell.TH.Quote
-import           Text.Heredoc
 import           Text.RE
 import           Text.RE.Internal.PreludeMacros
 import           Text.RE.Internal.QQ
@@ -107,13 +111,13 @@ scan = alex' match al oops
   where
     al :: [(Regex,Match String->Maybe Token)]
     al =
-      [ mk [here|\$\{([^{}]+)\}\(|] $         ECap . Just . x_1
-      , mk [here|\$\(|]             $ const $ ECap Nothing
-      , mk [here|\(\?:|]            $ const   PGrp
-      , mk [here|\(\?|]             $ const   PCap
-      , mk [here|\(|]               $ const   Bra
-      , mk [here|\\(.)|]            $         BS    . s2c . x_1
-      , mk [here|(.)|]              $         Other . s2c . x_1
+      [ mk "\\$\\{([^{}]+)\\}\\(" $         ECap . Just . x_1
+      , mk "\\$\\("               $ const $ ECap Nothing
+      , mk "\\(\\?:"              $ const   PGrp
+      , mk "\\(\\?"               $ const   PCap
+      , mk "\\("                  $ const   Bra
+      , mk "\\\\(.)"              $         BS    . s2c . x_1
+      , mk "(.)"                  $         Other . s2c . x_1
       ]
 
     x_1     = captureText $ IsCaptureOrdinal $ CaptureOrdinal 1

@@ -1,7 +1,5 @@
 {-# LANGUAGE NoImplicitPrelude          #-}
 {-# LANGUAGE RecordWildCards            #-}
-{-# LANGUAGE QuasiQuotes                #-}
-{-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE TypeSynonymInstances       #-}
 {-# LANGUAGE FlexibleInstances          #-}
@@ -9,6 +7,10 @@
 {-# LANGUAGE CPP                        #-}
 #if __GLASGOW_HASKELL__ >= 800
 {-# OPTIONS_GHC -fno-warn-redundant-constraints #-}
+{-# LANGUAGE TemplateHaskellQuotes      #-}
+#else
+{-# LANGUAGE QuasiQuotes                #-}
+{-# LANGUAGE TemplateHaskell            #-}
 #endif
 {-# OPTIONS_GHC -fno-warn-orphans       #-}
 

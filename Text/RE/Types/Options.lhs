@@ -1,9 +1,14 @@
 \begin{code}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE TemplateHaskell            #-}
-{-# LANGUAGE QuasiQuotes                #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE FunctionalDependencies     #-}
+{-# LANGUAGE CPP                        #-}
+#if __GLASGOW_HASKELL__ >= 800
+{-# LANGUAGE TemplateHaskellQuotes      #-}
+#else
+{-# LANGUAGE QuasiQuotes                #-}
+{-# LANGUAGE TemplateHaskell            #-}
+#endif
 
 module Text.RE.Types.Options where
 

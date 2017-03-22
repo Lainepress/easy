@@ -41,7 +41,6 @@ import qualified Data.Text                      as T
 import qualified Data.Text.Encoding             as TE
 import qualified Data.Text.Lazy                 as LT
 import           Prelude.Compat
-import           Text.Heredoc
 import           Text.RE.Types.Capture
 import           Text.RE.Types.CaptureID
 import           Text.RE.Types.Match
@@ -401,7 +400,7 @@ expandMacros x_src hm s =
 expandMacros' :: (MacroID->Maybe String) -> String -> String
 expandMacros' lu = fixpoint e_m
   where
-    e_m re_s = replaceAllCaptures TOP phi $ re_s $=~ [here|@(@|\{([^{}]+)\})|]
+    e_m re_s = replaceAllCaptures TOP phi $ re_s $=~ "@(@|\\{([^{}]+)\\})"
       where
         phi mtch _ cap = case txt == "@@" of
             True  -> Just   "@"
@@ -486,7 +485,7 @@ scan_template :: ( Replace a
                  )
               => a
               -> Matches a
-scan_template tpl = tpl $=~ [here|\$(\$|[0-9]|\{([^{}]+)\})|]
+scan_template tpl = tpl $=~ "\\$(\\$|[0-9]|\\{([^{}]+)\\})"
 \end{code}
 
 \begin{code}
