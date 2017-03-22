@@ -18,3 +18,12 @@ Travis-CI and AppVeyor pipelines that monitor the head of the repository.
 |              | macOS   | stack         | 8.0.2  | 8.5  |                         | &#8209;Werror |
 | AppVeyor     | Windows | stack         | 8.0.2  | 8.5  |                         | &#8209;Werror |  [![Windows build](https://ci.appveyor.com/api/projects/status/9gqs37u3h1mlc02b?svg=true)](https://ci.appveyor.com/project/engineerirngirisconnectcouk/regex/branch/master)
 | coveralls.io | Linux   | stack         | 7.10.3 | 6.30 |                         | &#8209;Werror |  [![Coverage](https://coveralls.io/repos/github/iconnect/regex/badge.svg?branch=master)](https://coveralls.io/github/iconnect/regex?branch=master)
+
+
+%heading#coveragenote Coverage Exceptions
+
+The following modules have been excempted from the code coverage statistics.
+
+| Module Exempted     | Reason                                                                
+| ------------------- | -----------------------------------------------------------------------------
+| [Text.RE.Internal.QQ](https://github.com/iconnect/regex/blob/master/Text/RE/Internal/QQ.hs) | Toolkit for use in quasi quoter contexts only which can't be measured by hps.

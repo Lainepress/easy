@@ -37,12 +37,16 @@ import           Text.RE.Types.Match
 import           Text.Regex.TDFA
 
 
+-- | quasi quoter for CaptureID ([cp|0|],[cp|y|], etc.)
 cp :: QuasiQuoter
 cp =
     (qq0 "cp")
       { quoteExp = parse_capture
       }
 
+-- | extract the CaptureNames from an RE or return an error diagnostic
+-- if the RE is not well formed; also returs the total number of captures
+-- in the RE
 extractNamedCaptures :: String -> Either String ((Int,CaptureNames),String)
 extractNamedCaptures s = Right (analyseTokens tks,formatTokens tks)
   where
@@ -54,6 +58,7 @@ Token
 -----
 
 \begin{code}
+-- | our RE scanner returns a list of these tokens
 data Token
   = ECap (Maybe String)
   | PGrp
@@ -63,6 +68,7 @@ data Token
   | Other       Char
   deriving (Show,Generic,Eq)
 
+-- | check that a token is well formed
 validToken :: Token -> Bool
 validToken tkn = case tkn of
     ECap  mb -> maybe True check_ecap mb
@@ -83,6 +89,8 @@ Analysing [Token] -> CaptureNames
 ---------------------------------
 
 \begin{code}
+-- | analyse a token stream, returning the number of captures and the
+-- 'CaptureNames'
 analyseTokens :: [Token] -> (Int,CaptureNames)
 analyseTokens tks0 = case count_em 1 tks0 of
     (n,as) -> (n-1, HM.fromList as)
@@ -106,6 +114,7 @@ Scanning Regex Strings
 ----------------------
 
 \begin{code}
+-- | scan a RE string into a list of RE Token
 scan :: String -> [Token]
 scan = alex' match al oops
   where
@@ -146,17 +155,20 @@ Formatting [Token]
 ------------------
 
 \begin{code}
+-- | format [Token] into an RE string
 formatTokens :: [Token] -> String
 formatTokens = formatTokens' defFormatTokenOptions
 
+-- | options for the general Token formatter below
 data FormatTokenOptions =
   FormatTokenOptions
-    { _fto_regex_type :: Maybe RegexType
-    , _fto_min_caps   :: Bool
-    , _fto_incl_caps  :: Bool
+    { _fto_regex_type :: Maybe RegexType    -- ^ Posix, PCRE or indeterminate REs?
+    , _fto_min_caps   :: Bool               -- ^ remove captures where possible
+    , _fto_incl_caps  :: Bool               -- ^ include the captures in the output
     }
   deriving (Show)
 
+-- | the default configuration for the Token formatter
 defFormatTokenOptions :: FormatTokenOptions
 defFormatTokenOptions =
   FormatTokenOptions
@@ -165,6 +177,8 @@ defFormatTokenOptions =
     , _fto_incl_caps  = False
     }
 
+-- | a configuration that will preserve the parsed regular expression
+-- in the output
 idFormatTokenOptions :: FormatTokenOptions
 idFormatTokenOptions =
   FormatTokenOptions
@@ -173,6 +187,7 @@ idFormatTokenOptions =
     , _fto_incl_caps  = True
     }
 
+-- | the general Token formatter, generating REs according to the options
 formatTokens' :: FormatTokenOptions -> [Token] -> String
 formatTokens' FormatTokenOptions{..} = foldr f ""
   where
