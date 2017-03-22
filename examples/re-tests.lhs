@@ -651,7 +651,6 @@ misc_tests = testGroup "Miscelaneous Tests"
         [ testCase "CaptureID lookup failure" $ do
             ok <- isValidError $ findCaptureID [cp|foo|] $ reCaptureNames [re|foo|]
             assertBool "failed" ok
-
         ]
     , testGroup "QQ"
         [ qq_tc "re"                      re
