@@ -238,11 +238,13 @@ parsing_tests = testGroup "Parsing"
             r <- mk re_s
             assertEqual "RE" re_s $ regexSource r
         , testCase "Match" $ do
-            r <- mk re_s
+            r <- mk' re_s
             assertEqual "Match" (pk <$> regex_str_match) $ matchOnce r $ pk str_
         ]
       where
-        mk   = makeRegex `asTypeOf` mk0
+        mk   = makeRegex              `asTypeOf` mk0
+
+        mk'  = makeRegexWith minBound `asTypeOf` mk0
 
         re_s = pk $ reSource regex_
 
