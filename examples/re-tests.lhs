@@ -23,6 +23,7 @@ regressions.
 
 module Main (main) where
 
+import           Control.Exception
 import           Data.Array
 import qualified Data.ByteString.Char8          as B
 import qualified Data.ByteString.Lazy.Char8     as LBS
@@ -408,7 +409,6 @@ searchReplaceReplaceTests = testGroup "SearchReplace"
 
     pcre_eds' :: IsRegex PCRE.RE a => Edits Identity PCRE.RE a
     pcre_eds' = Select [Template $ PCRE.unsafeCompileSearchReplaceSimple minBound "${d}([0-9]{2})/${m}([0-9]{2})/${y}([0-9]{4})///${y}-${m}-${d}"]
-
 \end{code}
 
 
@@ -647,7 +647,13 @@ The Miscelaneous Tests
 \begin{code}
 misc_tests :: TestTree
 misc_tests = testGroup "Miscelaneous Tests"
-    [ testGroup "QQ"
+    [ testGroup "CaptureID"
+        [ testCase "CaptureID lookup failure" $ do
+            ok <- isValidError $ findCaptureID [cp|foo|] $ reCaptureNames [re|foo|]
+            assertBool "failed" ok
+
+        ]
+    , testGroup "QQ"
         [ qq_tc "re"                      re
         , qq_tc "reMS"                    reMS
         , qq_tc "reMI"                    reMI
@@ -812,4 +818,10 @@ instance Applicative Identity where
 instance Monad Identity where
   return = Identity
   (>>=) (Identity x) f = f x
+
+isValidError :: a -> IO Bool
+isValidError x = catch (x `seq` return False) hdl
+  where
+    hdl :: SomeException -> IO Bool
+    hdl se = return $ (length $ show se) `seq` True
 \end{code}
