@@ -5,6 +5,7 @@
   * Add type-safe replacement templates (#60)
   * Finish tidying up the API (#80)
   * Make `regex` compatible w/ TH-less GHCs (#70)
+  * Declare extensions the compiler must support (#83)
   * Fix curl for AppVeyor build (#79)
   * Fix AppVeyor badge (#81
   * Remove QQ from code coverage stats (#82)
