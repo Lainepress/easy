@@ -381,7 +381,7 @@ badges = do
     mapM_ collect
       [ (,) "license"             "https://img.shields.io/badge/license-BSD3-brightgreen.svg"
       , (,) "unix-build"          "https://img.shields.io/travis/iconnect/regex.svg?label=Linux%2BmacOS"
-      , (,) "windows-build"       "https://img.shields.io/appveyor/ci/engineerirngirisconnectcouk/regex.svg?label=Windows"
+      , (,) "windows-build"       "https://img.shields.io/appveyor/ci/cdornan/regex.svg?label=Windows"
       , (,) "coverage"            "https://img.shields.io/coveralls/iconnect/regex.svg"
       , (,) "build-status"        "https://img.shields.io/travis/iconnect/regex.svg?label=Build%20Status"
       , (,) "maintainers-contact" "https://img.shields.io/badge/email-maintainers%40regex.uk-blue.svg"
