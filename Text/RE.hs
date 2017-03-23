@@ -25,7 +25,7 @@ module Text.RE
   , anyMatches
   , countMatches
   , matches
-  -- ** Match
+  -- * Match
   , Match
   , matchSource
   , matched

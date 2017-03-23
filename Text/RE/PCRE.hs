@@ -19,9 +19,18 @@ module Text.RE.PCRE
   -- * The Classic rexex-base Match Operators
   , (=~)
   , (=~~)
-  -- * The Toolkit
-  -- $toolkit
-  , module Text.RE
+  -- * Matches
+  , Matches
+  , matchesSource
+  , allMatches
+  , anyMatches
+  , countMatches
+  , matches
+  -- * Match
+  , Match
+  , matchSource
+  , matched
+  , matchedText
   -- * The 'RE' Type and functions
   -- $re
   , RE
@@ -99,12 +108,6 @@ import           Text.RE.Types.SearchReplace
 -- $tutorial
 -- We have a regex tutorial at <http://tutorial.regex.uk>. These API
 -- docs are mainly for reference.
-
--- $toolkit
---
--- Beyond the above match operators and the regular expression type
--- below, "Text.RE" contains the toolkit for replacing captures,
--- specifying options, etc.
 
 -- $re
 --
