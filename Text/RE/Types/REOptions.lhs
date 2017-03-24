@@ -10,7 +10,7 @@
 {-# LANGUAGE TemplateHaskell            #-}
 #endif
 
-module Text.RE.Types.Options where
+module Text.RE.Types.REOptions where
 
 import           Data.Hashable
 import qualified Data.HashMap.Strict        as HM
@@ -20,8 +20,8 @@ import           Language.Haskell.TH.Syntax
 \end{code}
 
 \begin{code}
-data Options_ r c e =
-  Options
+data REOptions_ r c e =
+  REOptions
     { optionsMacs :: !(Macros r)
     , optionsComp :: !c
     , optionsExec :: !e
@@ -32,7 +32,7 @@ data Options_ r c e =
 \begin{code}
 class IsOption o r c e |
     e -> r, c -> e , e -> c, r -> c, c -> r, r -> e where
-  makeOptions :: o -> Options_ r c e
+  makeREOptions :: o -> REOptions_ r c e
 \end{code}
 
 \begin{code}
@@ -56,7 +56,7 @@ emptyMacros = HM.empty
 \end{code}
 
 \begin{code}
-data SimpleRegexOptions
+data SimpleREOptions
   = MultilineSensitive
   | MultilineInsensitive
   | BlockSensitive
@@ -65,7 +65,7 @@ data SimpleRegexOptions
 \end{code}
 
 \begin{code}
-instance Lift SimpleRegexOptions where
+instance Lift SimpleREOptions where
   lift sro = case sro of
     MultilineSensitive    -> conE 'MultilineSensitive
     MultilineInsensitive  -> conE 'MultilineInsensitive

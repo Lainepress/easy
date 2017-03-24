@@ -10,7 +10,7 @@ module Text.RE.Types.IsRegex where
 
 import           Text.RE.Types.Match
 import           Text.RE.Types.Matches
-import           Text.RE.Types.Options
+import           Text.RE.Types.REOptions
 import           Text.RE.Types.Replace
 \end{code}
 
@@ -20,6 +20,6 @@ class Replace s => IsRegex re s where
   matchOnce     :: re -> s -> Match s
   matchMany     :: re -> s -> Matches s
   makeRegex     :: (Functor m,Monad m) => s -> m re
-  makeRegexWith :: (Functor m,Monad m) => SimpleRegexOptions -> s -> m re
+  makeRegexWith :: (Functor m,Monad m) => SimpleREOptions -> s -> m re
   regexSource   :: re -> s
 \end{code}

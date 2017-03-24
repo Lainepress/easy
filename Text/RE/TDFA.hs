@@ -34,7 +34,7 @@ module Text.RE.TDFA
   -- * The 'RE' Type and functions
   -- $re
   , RE
-  , SimpleRegexOptions(..)
+  , SimpleREOptions(..)
   , reSource
   , compileRegex
   , compileRegexWith
@@ -63,7 +63,7 @@ import           Text.RE.TDFA.String()
 import           Text.RE.TDFA.Text()
 import           Text.RE.TDFA.Text.Lazy()
 import           Text.RE.Types.IsRegex
-import           Text.RE.Types.Options
+import           Text.RE.Types.REOptions
 import           Text.RE.Types.SearchReplace
 
 

@@ -179,10 +179,10 @@ pcre_edit mp bs_lbs import_lbs <span class="fu">=</span>
 source_mp <span class="fu">=</span> <span class="st">&quot;Text.RE.TDFA.ByteString.Lazy&quot;</span>
 
 tdfa_re, module_re, import_re,<span class="ot"> bs_re ::</span> <span class="dt">RE</span>
-tdfa_re   <span class="fu">=</span> [re|TDFA|]
-module_re <span class="fu">=</span> [re|Text.RE.TDFA.ByteString.Lazy|]
-import_re <span class="fu">=</span> [re|import qualified Data.ByteString.Lazy.Char8 *as LBS|]
-bs_re     <span class="fu">=</span> [re|LBS.ByteString|]
+tdfa_re   <span class="fu">=</span> [re<span class="fu">|</span><span class="dt">TDFA</span><span class="fu">|</span>]
+module_re <span class="fu">=</span> [re<span class="fu">|</span><span class="dt">Text.RE.TDFA.ByteString.Lazy</span><span class="fu">|</span>]
+import_re <span class="fu">=</span> [re<span class="fu">|</span><span class="kw">import qualified</span> <span class="dt">Data.ByteString.Lazy.Char8</span> *<span class="kw">as</span> <span class="dt">LBS</span>|]
+bs_re     <span class="fu">=</span> [re<span class="fu">|</span><span class="dt">LBS.ByteString</span><span class="fu">|</span>]
 
 <span class="ot">mod_filepath ::</span> <span class="dt">Bool</span> <span class="ot">-&gt;</span> <span class="dt">ModPath</span> <span class="ot">-&gt;</span> FilePath
 mod_filepath text_present mp <span class="fu">=</span> pfx <span class="fu">++</span> map tr mp <span class="fu">++</span> <span class="st">&quot;.hs&quot;</span>

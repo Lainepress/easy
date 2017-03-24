@@ -42,7 +42,7 @@ import           System.Environment
 import           System.Exit
 import           System.IO
 import           Text.RE.Tools.Sed
-import           Text.RE.Types.Options
+import           Text.RE.Types.REOptions
 import           Text.RE.TestBench.Parsers
 import           Text.RE.TestBench
 import           Text.RE.PCRE.ByteString.Lazy
@@ -266,16 +266,16 @@ instance IsEvent LBS.ByteString where
 
 
 --
--- Options and Prelude
+-- REOptions and Prelude
 --
 
-lpo :: Options
-lpo = makeOptions lp_prelude
+lpo :: REOptions
+lpo = makeREOptions lp_prelude
 
 lp_prelude :: Macros RE
 lp_prelude = runIdentity $ mkMacros mk regexType ExclCaptures lp_env
   where
-    mk   = maybe oops Identity . compileRegexWithOptions noPreludeOptions
+    mk   = maybe oops Identity . compileRegexWithREOptions noPreludeREOptions
 
     oops = error "lp_prelude"
 

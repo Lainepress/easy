@@ -57,7 +57,7 @@ import           Text.RE.Types.Capture
 import           Text.RE.Types.CaptureID
 import           Text.RE.Types.Match
 import           Text.RE.Types.Matches
-import           Text.RE.Types.Options
+import           Text.RE.Types.REOptions
 import           Text.RE.Types.Replace
 import           Text.RE.Types.SearchReplace
 
@@ -412,12 +412,12 @@ searchReplaceReplaceTests = testGroup "SearchReplace"
 \end{code}
 
 
-<h3>Testing The Options</h3>
+<h3>Testing The REOptions</h3>
 
 \begin{code}
 options_tests :: TestTree
-options_tests = testGroup "Simple Options"
-  [ testGroup "TDFA Simple Options"
+options_tests = testGroup "Simple REOptions"
+  [ testGroup "TDFA Simple REOptions"
       [ testCase "default (MultilineSensitive)" $ assertEqual "#" 2 $
           countMatches $ s TDFA.*=~ [TDFA.re|[0-9a-f]{2}$|]
       , testCase "MultilineSensitive" $ assertEqual "#" 2 $
@@ -429,7 +429,7 @@ options_tests = testGroup "Simple Options"
       , testCase "BlockInsensitive" $ assertEqual "#" 1 $
           countMatches $ s TDFA.*=~ [TDFA.reBlockInsensitive|[0-9a-f]{2}$|]
       ]
-  , testGroup "PCRE Simple Options"
+  , testGroup "PCRE Simple REOptions"
       [ testCase "default (MultilineSensitive)" $ assertEqual "#" 2 $
           countMatches $ s PCRE.*=~ [PCRE.re|[0-9a-f]{2}$|]
       , testCase "MultilineSensitive" $ assertEqual "#" 2 $
@@ -562,9 +562,9 @@ formatScanTestTree =
         SC.testProperty "formatTokens == formatTokens0" $
           \tks -> formatTokens tks == formatTokens0 tks
     , localOption (SmallCheckDepth 4) $
-        SC.testProperty "scan . formatTokens' idFormatTokenOptions == id" $
+        SC.testProperty "scan . formatTokens' idFormatTokenREOptions == id" $
           \tks -> all validToken tks ==>
-                    scan (formatTokens' idFormatTokenOptions tks) == tks
+                    scan (formatTokens' idFormatTokenREOptions tks) == tks
     ]
 
 analyseTokensTestTree :: TestTree
@@ -706,8 +706,8 @@ misc_tests = testGroup "Miscelaneous Tests"
             , TDFA.ed_
             ]
         , testCase  "TDFA.regexType"           $ assertBool "TDFA" $ isTDFA TDFA.regexType
-        , testCase  "TDFA.reOptions"           $ assert_empty_macs $ optionsMacs (TDFA.reOptions tdfa_re)
-        , testCase  "TDFA.makeOptions md"      $ assert_empty_macs $ optionsMacs tdfa_opts
+        , testCase  "TDFA.reREOptions"           $ assert_empty_macs $ optionsMacs (TDFA.reREOptions tdfa_re)
+        , testCase  "TDFA.makeREOptions md"      $ assert_empty_macs $ optionsMacs tdfa_opts
         , testCase  "TDFA.preludeTestsFailing" $ []      @=? TDFA.preludeTestsFailing
         , ne_string "TDFA.preludeTable"          TDFA.preludeTable
         , ne_string "TDFA.preludeSources"        TDFA.preludeSources
@@ -744,8 +744,8 @@ misc_tests = testGroup "Miscelaneous Tests"
             , PCRE.ed_
             ]
         , testCase  "PCRE.regexType"           $ assertBool "PCRE" $ isPCRE PCRE.regexType
-        , testCase  "PCRE.reOptions"           $ assert_empty_macs $ optionsMacs (PCRE.reOptions pcre_re)
-        , testCase  "PCRE.makeOptions md"      $ assert_empty_macs $ optionsMacs pcre_opts
+        , testCase  "PCRE.reREOptions"           $ assert_empty_macs $ optionsMacs (PCRE.reREOptions pcre_re)
+        , testCase  "PCRE.makeREOptions md"      $ assert_empty_macs $ optionsMacs pcre_opts
         , testCase  "PCRE.preludeTestsFailing" $ []      @=? PCRE.preludeTestsFailing
         , ne_string "PCRE.preludeTable"          PCRE.preludeTable
         , ne_string "PCRE.preludeTable"          PCRE.preludeSources
@@ -760,11 +760,11 @@ misc_tests = testGroup "Miscelaneous Tests"
         ]
     ]
   where
-    tdfa_re   = fromMaybe oops $ TDFA.compileRegexWithOptions tdfa_opts ".*"
-    pcre_re   = fromMaybe oops $ PCRE.compileRegexWithOptions pcre_opts ".*"
+    tdfa_re   = fromMaybe oops $ TDFA.compileRegexWithREOptions tdfa_opts ".*"
+    pcre_re   = fromMaybe oops $ PCRE.compileRegexWithREOptions pcre_opts ".*"
 
-    tdfa_opts = makeOptions no_macs_t :: Options_ TDFA.RE TDFA_.CompOption TDFA_.ExecOption
-    pcre_opts = makeOptions no_macs_p :: Options_ PCRE.RE PCRE_.CompOption PCRE_.ExecOption
+    tdfa_opts = makeREOptions no_macs_t :: REOptions_ TDFA.RE TDFA_.CompOption TDFA_.ExecOption
+    pcre_opts = makeREOptions no_macs_p :: REOptions_ PCRE.RE PCRE_.CompOption PCRE_.ExecOption
 
     no_macs_t = HM.fromList [] :: Macros TDFA.RE
     no_macs_p = HM.fromList [] :: Macros PCRE.RE

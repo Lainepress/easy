@@ -30,7 +30,7 @@ import           Data.Maybe
 import qualified Data.Text                    as T
 import           Data.Time
 import           Prelude.Compat
-import           Text.RE.Types.Options
+import           Text.RE.Types.REOptions
 import           Text.RE.TestBench.Parsers
 import           Text.RE.TestBench
 

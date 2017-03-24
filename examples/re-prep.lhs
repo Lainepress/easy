@@ -179,7 +179,7 @@ gen_all = do
     pd "RE/Types/Match"
     pd "RE/Types/Capture"
     pd "RE/Types/IsRegex"
-    pd "RE/Types/Options"
+    pd "RE/Types/REOptions"
     pd "RE/Types/Replace"
     pd "RE/TestBench"
     pd "RE/Tools/Edit"

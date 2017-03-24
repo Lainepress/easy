@@ -68,10 +68,11 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </header>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE NoImplicitPrelude          #-}</span>
 <span class="ot">{-# LANGUAGE RecordWildCards            #-}</span>
+<span class="ot">{-# LANGUAGE DeriveFunctor              #-}</span>
 <span class="ot">{-# LANGUAGE CPP                        #-}</span>
-<span class="ot">#if __GLASGOW_HASKELL__ &gt;= 800</span>
+<span class="st">#if __GLASGOW_HASKELL__ &gt;= 800</span>
 <span class="ot">{-# OPTIONS_GHC -fno-warn-redundant-constraints #-}</span>
-<span class="ot">#endif</span>
+<span class="st">#endif</span>
 
 <span class="kw">module</span> <span class="dt">Text.RE.Tools.Edit</span>
   (
@@ -112,7 +113,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <span class="co">-- | each Edit action specifies how the match should be processed</span>
 <span class="kw">data</span> <span class="dt">Edit</span> m re s
   <span class="fu">=</span> <span class="dt">Template</span> <span class="fu">!</span>(<span class="dt">SearchReplace</span> re s)
-  <span class="fu">|</span> <span class="dt">Function</span> <span class="fu">!</span>re <span class="dt">Context</span> <span class="fu">!</span>(<span class="dt">LineNo</span><span class="ot">-&gt;</span><span class="dt">Match</span> s<span class="ot">-&gt;</span><span class="dt">Location</span><span class="ot">-&gt;</span><span class="dt">Capture</span> s<span class="ot">-&gt;</span>m (<span class="dt">Maybe</span> s))
+  <span class="fu">|</span> <span class="dt">Function</span> <span class="fu">!</span>re <span class="dt">REContext</span> <span class="fu">!</span>(<span class="dt">LineNo</span><span class="ot">-&gt;</span><span class="dt">Match</span> s<span class="ot">-&gt;</span><span class="dt">Location</span><span class="ot">-&gt;</span><span class="dt">Capture</span> s<span class="ot">-&gt;</span>m (<span class="dt">Maybe</span> s))
   <span class="fu">|</span> <span class="dt">LineEdit</span> <span class="fu">!</span>re         <span class="fu">!</span>(<span class="dt">LineNo</span><span class="ot">-&gt;</span><span class="dt">Matches</span> s<span class="ot">-&gt;</span>m (<span class="dt">LineEdit</span> s))
 
 <span class="co">-- | a LineEdit is the most general action thar can be performed on a line</span>
@@ -121,7 +122,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
   <span class="fu">=</span> <span class="dt">NoEdit</span>
   <span class="fu">|</span> <span class="dt">ReplaceWith</span> <span class="fu">!</span>s
   <span class="fu">|</span> <span class="dt">Delete</span>
-  <span class="kw">deriving</span> (<span class="dt">Show</span>)
+  <span class="kw">deriving</span> (<span class="dt">Functor</span>,<span class="dt">Show</span>)
+
 
 <span class="co">-- | apply an &#39;Edit&#39; script to a single line</span>
 <span class="ot">applyEdits ::</span> (<span class="dt">IsRegex</span> re s,<span class="dt">Monad</span> m,<span class="dt">Functor</span> m)

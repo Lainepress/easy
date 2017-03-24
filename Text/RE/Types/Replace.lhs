@@ -10,7 +10,7 @@ module Text.RE.Types.Replace
   ( Replace(..)
   , ReplaceMethods(..)
   , replaceMethods
-  , Context(..)
+  , REContext(..)
   , Location(..)
   , isTopLocation
   , replace
@@ -45,7 +45,7 @@ import           Text.RE.Types.Capture
 import           Text.RE.Types.CaptureID
 import           Text.RE.Types.Match
 import           Text.RE.Types.Matches
-import           Text.RE.Types.Options
+import           Text.RE.Types.REOptions
 import           Text.Read
 import           Text.Regex.TDFA
 import           Text.Regex.TDFA.Text()
@@ -107,8 +107,8 @@ replaceMethods =
 \end{code}
 
 \begin{code}
--- | @Context@ specifies which contexts the substitutions should be applied
-data Context
+-- | @REContext@ specifies which contexts the substitutions should be applied
+data REContext
   = TOP   -- ^ substitutions should be applied to the top-level only,
           -- the text that matched the whole RE
   | SUB   -- ^ substitutions should only be applied to the text
@@ -156,7 +156,7 @@ replaceAll tpl ac = replaceAllCaptures TOP (parseTemplateE tpl) ac
 -- context and returns the same replacement text as the _phi_phi
 -- context.
 replaceAllCaptures :: Replace a
-                   => Context
+                   => REContext
                    -> (Match a->Location->Capture a->Maybe a)
                    -> Matches a
                    -> a
@@ -171,7 +171,7 @@ replaceAllCaptures = replaceAllCaptures_ replaceMethods
 -- Replace methods through the ReplaceMethods argument
 replaceAllCaptures_ :: Extract a
                     => ReplaceMethods a
-                    -> Context
+                    -> REContext
                     -> (Match a->Location->Capture a->Maybe a)
                     -> Matches a
                     -> a
@@ -184,7 +184,7 @@ replaceAllCaptures_ s ctx phi ac =
 -- replaceAllCaptures_
 replaceAllCapturesM :: (Extract a,Monad m)
                     => ReplaceMethods a
-                    -> Context
+                    -> REContext
                     -> (Match a->Location->Capture a->m (Maybe a))
                     -> Matches a
                     -> m a
@@ -241,7 +241,7 @@ replace tpl c = replaceCaptures TOP (parseTemplateE tpl) c
 -- context and returns the same replacement text as the _phi_phi
 -- context.
 replaceCaptures :: Replace a
-                 => Context
+                 => REContext
                  -> (Match a->Location->Capture a->Maybe a)
                  -> Match a
                  -> a
@@ -253,7 +253,7 @@ replaceCaptures = replaceCaptures_ replaceMethods
 -- through the ReplaceMethods argument
 replaceCaptures_ :: Extract a
                  => ReplaceMethods a
-                 -> Context
+                 -> REContext
                  -> (Match a->Location->Capture a->Maybe a)
                  -> Match a
                  -> a
@@ -266,7 +266,7 @@ replaceCaptures_ s ctx phi caps =
 -- replaceCaptures_
 replaceCapturesM :: (Monad m,Extract a)
                  => ReplaceMethods a
-                 -> Context
+                 -> REContext
                  -> (Match a->Location->Capture a->m (Maybe a))
                  -> Match a
                  -> m a

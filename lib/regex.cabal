@@ -68,7 +68,7 @@ Library
       Text.RE.Types.LineNo
       Text.RE.Types.Match
       Text.RE.Types.Matches
-      Text.RE.Types.Options
+      Text.RE.Types.REOptions
       Text.RE.Types.Replace
       Text.RE.Types.SearchReplace
 

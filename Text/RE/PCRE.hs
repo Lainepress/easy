@@ -34,7 +34,7 @@ module Text.RE.PCRE
   -- * The 'RE' Type and functions
   -- $re
   , RE
-  , SimpleRegexOptions(..)
+  , SimpleREOptions(..)
   , reSource
   , compileRegex
   , compileRegexWith
@@ -60,7 +60,7 @@ import           Text.RE.PCRE.ByteString.Lazy()
 import           Text.RE.PCRE.Sequence()
 import           Text.RE.PCRE.String()
 import           Text.RE.Types.IsRegex
-import           Text.RE.Types.Options
+import           Text.RE.Types.REOptions
 import           Text.RE.Types.SearchReplace
 
 

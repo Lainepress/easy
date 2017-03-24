@@ -38,11 +38,11 @@ module Text.RE.PCRE.RE
   , cp
   , regexType
   , RE
-  , reOptions
+  , reREOptions
   , reSource
   , reCaptureNames
   , reRegex
-  , Options
+  , REOptions
   , prelude
   , preludeEnv
   , preludeTestsFailing
@@ -50,12 +50,12 @@ module Text.RE.PCRE.RE
   , preludeSummary
   , preludeSources
   , preludeSource
-  , noPreludeOptions
-  , defaultOptions
-  , unpackSimpleRegexOptions
+  , noPreludeREOptions
+  , defaultREOptions
+  , unpackSimpleREOptions
   , compileRegex
   , compileRegexWith
-  , compileRegexWithOptions
+  , compileRegexWithREOptions
   , unsafeCompileSearchReplaceSimple
   , unsafeCompileSearchReplace
   , escape
@@ -74,7 +74,7 @@ import           Text.RE.Internal.QQ
 import           Text.RE.TestBench
 import           Text.RE.Types.CaptureID
 import           Text.RE.Types.IsRegex
-import           Text.RE.Types.Options
+import           Text.RE.Types.REOptions
 import           Text.RE.Types.Replace
 import           Text.RE.Types.SearchReplace
 import           Text.Regex.PCRE
@@ -129,14 +129,14 @@ regexType =
 
 data RE =
   RE
-    { _re_options :: !Options
+    { _re_options :: !REOptions
     , _re_source  :: !String
     , _re_cnames  :: !CaptureNames
     , _re_regex   :: !Regex
     }
 
-reOptions :: RE -> Options
-reOptions = _re_options
+reREOptions :: RE -> REOptions
+reREOptions = _re_options
 
 reSource :: RE -> String
 reSource = _re_source
@@ -147,41 +147,41 @@ reCaptureNames = _re_cnames
 reRegex  :: RE -> Regex
 reRegex = _re_regex
 
-type Options = Options_ RE CompOption ExecOption
+type REOptions = REOptions_ RE CompOption ExecOption
 
-instance IsOption SimpleRegexOptions RE CompOption ExecOption where
-  makeOptions    = unpackSimpleRegexOptions
+instance IsOption SimpleREOptions RE CompOption ExecOption where
+  makeREOptions    = unpackSimpleREOptions
 
 instance IsOption (Macros RE) RE CompOption ExecOption where
-  makeOptions ms = Options ms def_comp_option def_exec_option
+  makeREOptions ms = REOptions ms def_comp_option def_exec_option
 
 instance IsOption CompOption  RE CompOption ExecOption where
-  makeOptions co = Options prelude co def_exec_option
+  makeREOptions co = REOptions prelude co def_exec_option
 
 instance IsOption ExecOption  RE CompOption ExecOption where
-  makeOptions eo = Options prelude def_comp_option eo
+  makeREOptions eo = REOptions prelude def_comp_option eo
 
-instance IsOption Options     RE CompOption ExecOption where
-  makeOptions    = id
+instance IsOption REOptions     RE CompOption ExecOption where
+  makeREOptions    = id
 
 instance IsOption ()          RE CompOption ExecOption where
-  makeOptions _  = unpackSimpleRegexOptions minBound
+  makeREOptions _  = unpackSimpleREOptions minBound
 
 def_comp_option :: CompOption
-def_comp_option = optionsComp defaultOptions
+def_comp_option = optionsComp defaultREOptions
 
 def_exec_option :: ExecOption
-def_exec_option = optionsExec defaultOptions
+def_exec_option = optionsExec defaultREOptions
 
-noPreludeOptions :: Options
-noPreludeOptions = defaultOptions { optionsMacs = emptyMacros }
+noPreludeREOptions :: REOptions
+noPreludeREOptions = defaultREOptions { optionsMacs = emptyMacros }
 
-defaultOptions :: Options
-defaultOptions = makeOptions (minBound::SimpleRegexOptions)
+defaultREOptions :: REOptions
+defaultREOptions = makeREOptions (minBound::SimpleREOptions)
 
-unpackSimpleRegexOptions :: SimpleRegexOptions -> Options
-unpackSimpleRegexOptions sro =
-  Options
+unpackSimpleREOptions :: SimpleREOptions -> REOptions
+unpackSimpleREOptions sro =
+  REOptions
     { optionsMacs = prelude
     , optionsComp = comp
     , optionsExec = defaultExecOpt
@@ -203,24 +203,24 @@ unpackSimpleRegexOptions sro =
 
 -- | compie a RE from a string using default options
 compileRegex :: (Functor m,Monad m) => String -> m RE
-compileRegex = compileRegexWithOptions ()
+compileRegex = compileRegexWithREOptions ()
 
--- | compie a RE from a @String@ and 'SimpleRegexOptions'
-compileRegexWith :: (Functor m,Monad m) => SimpleRegexOptions -> String -> m RE
-compileRegexWith = compileRegexWithOptions
+-- | compie a RE from a @String@ and 'SimpleREOptions'
+compileRegexWith :: (Functor m,Monad m) => SimpleREOptions -> String -> m RE
+compileRegexWith = compileRegexWithREOptions
 
--- | compile a RE from a @String@ and a complete set of 'Options'
-compileRegexWithOptions :: ( IsOption o RE CompOption ExecOption
+-- | compile a RE from a @String@ and a complete set of 'REOptions'
+compileRegexWithREOptions :: ( IsOption o RE CompOption ExecOption
                            , Functor m
                            , Monad   m
                            )
                         => o
                         -> String
                         -> m RE
-compileRegexWithOptions = compileRegex_ . makeOptions
+compileRegexWithREOptions = compileRegex_ . makeREOptions
 
 compileRegex_ :: ( Functor m , Monad m )
-              => Options
+              => REOptions
               -> String
               -> m RE
 compileRegex_ os re_s = uncurry mk <$> compileRegex' os re_s
@@ -233,7 +233,7 @@ compileRegex_ os re_s = uncurry mk <$> compileRegex' os re_s
         , _re_regex   = rex
         }
 
-re' :: Maybe SimpleRegexOptions -> QuasiQuoter
+re' :: Maybe SimpleREOptions -> QuasiQuoter
 re' mb = case mb of
   Nothing  ->
     (qq0 "re'")
@@ -244,12 +244,12 @@ re' mb = case mb of
       { quoteExp = parse sro (\rs->[|unsafeCompileRegexSimple sro rs|])
       }
   where
-    parse :: SimpleRegexOptions -> (String->Q Exp) -> String -> Q Exp
+    parse :: SimpleREOptions -> (String->Q Exp) -> String -> Q Exp
     parse sro mk rs = either error (\_->mk rs) $ compileRegex_ os rs
       where
-        os = unpackSimpleRegexOptions sro
+        os = unpackSimpleREOptions sro
 
-ed' :: Maybe SimpleRegexOptions -> QuasiQuoter
+ed' :: Maybe SimpleREOptions -> QuasiQuoter
 ed' mb = case mb of
   Nothing  ->
     (qq0 "ed'")
@@ -260,29 +260,29 @@ ed' mb = case mb of
       { quoteExp = parse sro (\rs->[|unsafeCompileSearchReplaceSimple sro rs|])
       }
   where
-    parse :: SimpleRegexOptions -> (String->Q Exp) -> String -> Q Exp
+    parse :: SimpleREOptions -> (String->Q Exp) -> String -> Q Exp
     parse sro mk ts = either error (\_->mk ts) ei
       where
         ei :: Either String (SearchReplace RE String)
         ei = compileSearchReplace_ id (compileRegexWith sro) ts
 
-unsafeCompileRegexSimple :: SimpleRegexOptions -> String -> RE
+unsafeCompileRegexSimple :: SimpleREOptions -> String -> RE
 unsafeCompileRegexSimple sro re_s = unsafeCompileRegex os re_s
   where
-    os = unpackSimpleRegexOptions sro
+    os = unpackSimpleREOptions sro
 
 unsafeCompileRegex :: IsOption o RE CompOption ExecOption
                    => o
                    -> String
                    -> RE
-unsafeCompileRegex = unsafeCompileRegex_ . makeOptions
+unsafeCompileRegex = unsafeCompileRegex_ . makeREOptions
 
 unsafeCompileSearchReplaceSimple :: IsRegex RE s
-                                 => SimpleRegexOptions
+                                 => SimpleREOptions
                                  -> String
                                  -> SearchReplace RE s
 unsafeCompileSearchReplaceSimple sro =
-    unsafeCompileSearchReplace $ unpackSimpleRegexOptions sro
+    unsafeCompileSearchReplace $ unpackSimpleREOptions sro
 
 unsafeCompileSearchReplace :: ( IsOption o RE CompOption ExecOption
                               , IsRegex RE s
@@ -291,18 +291,18 @@ unsafeCompileSearchReplace :: ( IsOption o RE CompOption ExecOption
                            -> String
                            -> SearchReplace RE s
 unsafeCompileSearchReplace os =
-    unsafeCompileSearchReplace_ packE $ compileRegexWithOptions os
+    unsafeCompileSearchReplace_ packE $ compileRegexWithREOptions os
 
-unsafeCompileRegex_ :: Options -> String -> RE
-unsafeCompileRegex_ os = either oops id . compileRegexWithOptions os
+unsafeCompileRegex_ :: REOptions -> String -> RE
+unsafeCompileRegex_ os = either oops id . compileRegexWithREOptions os
   where
     oops = error . ("unsafeCompileRegex: " ++)
 
 compileRegex' :: (Functor m,Monad m)
-              => Options
+              => REOptions
               -> String
               -> m (CaptureNames,Regex)
-compileRegex' Options{..} s0 = do
+compileRegex' REOptions{..} s0 = do
     ((_,cnms),s2) <- either fail return $ extractNamedCaptures s1
     (,) cnms <$> makeRegexOptsM optionsComp optionsExec s2
   where
@@ -311,7 +311,7 @@ compileRegex' Options{..} s0 = do
 prelude :: Macros RE
 prelude = runIdentity $ preludeMacros mk regexType ExclCaptures
   where
-    mk = Identity . unsafeCompileRegex_ noPreludeOptions
+    mk = Identity . unsafeCompileRegex_ noPreludeREOptions
 
 preludeTestsFailing :: [MacroID]
 preludeTestsFailing = badMacros preludeEnv

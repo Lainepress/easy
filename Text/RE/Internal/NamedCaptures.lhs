@@ -12,7 +12,7 @@
 module Text.RE.Internal.NamedCaptures
   ( cp
   , extractNamedCaptures
-  , idFormatTokenOptions
+  , idFormatTokenREOptions
   , Token(..)
   , validToken
   , formatTokens
@@ -157,11 +157,11 @@ Formatting [Token]
 \begin{code}
 -- | format [Token] into an RE string
 formatTokens :: [Token] -> String
-formatTokens = formatTokens' defFormatTokenOptions
+formatTokens = formatTokens' defFormatTokenREOptions
 
 -- | options for the general Token formatter below
-data FormatTokenOptions =
-  FormatTokenOptions
+data FormatTokenREOptions =
+  FormatTokenREOptions
     { _fto_regex_type :: Maybe RegexType    -- ^ Posix, PCRE or indeterminate REs?
     , _fto_min_caps   :: Bool               -- ^ remove captures where possible
     , _fto_incl_caps  :: Bool               -- ^ include the captures in the output
@@ -169,9 +169,9 @@ data FormatTokenOptions =
   deriving (Show)
 
 -- | the default configuration for the Token formatter
-defFormatTokenOptions :: FormatTokenOptions
-defFormatTokenOptions =
-  FormatTokenOptions
+defFormatTokenREOptions :: FormatTokenREOptions
+defFormatTokenREOptions =
+  FormatTokenREOptions
     { _fto_regex_type = Nothing
     , _fto_min_caps   = False
     , _fto_incl_caps  = False
@@ -179,17 +179,17 @@ defFormatTokenOptions =
 
 -- | a configuration that will preserve the parsed regular expression
 -- in the output
-idFormatTokenOptions :: FormatTokenOptions
-idFormatTokenOptions =
-  FormatTokenOptions
+idFormatTokenREOptions :: FormatTokenREOptions
+idFormatTokenREOptions =
+  FormatTokenREOptions
     { _fto_regex_type = Nothing
     , _fto_min_caps   = False
     , _fto_incl_caps  = True
     }
 
 -- | the general Token formatter, generating REs according to the options
-formatTokens' :: FormatTokenOptions -> [Token] -> String
-formatTokens' FormatTokenOptions{..} = foldr f ""
+formatTokens' :: FormatTokenREOptions -> [Token] -> String
+formatTokens' FormatTokenREOptions{..} = foldr f ""
   where
     f tk tl = t_s ++ tl
       where
@@ -213,7 +213,7 @@ formatTokens' FormatTokenOptions{..} = foldr f ""
 \end{code}
 
 \begin{code}
--- this is a reference of formatTokens defFormatTokenOptions,
+-- this is a reference of formatTokens defFormatTokenREOptions,
 -- used for testing the latter
 formatTokens0 :: [Token] -> String
 formatTokens0 = foldr f ""

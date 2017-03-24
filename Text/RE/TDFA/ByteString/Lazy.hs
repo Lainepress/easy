@@ -37,7 +37,7 @@ module Text.RE.TDFA.ByteString.Lazy
   -- * The 'RE' Type and functions
   -- $re
   , RE
-  , SimpleRegexOptions(..)
+  , SimpleREOptions(..)
   , reSource
   , compileRegex
   , compileRegexWith
@@ -52,7 +52,7 @@ import           Text.Regex.Base
 import           Text.RE
 import           Text.RE.Internal.AddCaptureNames
 import           Text.RE.Types.IsRegex
-import           Text.RE.Types.Options
+import           Text.RE.Types.REOptions
 import           Text.RE.Types.Replace
 import           Text.RE.TDFA.RE
 import           Text.RE.Types.SearchReplace

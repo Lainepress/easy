@@ -7,9 +7,9 @@
   * Make `regex` compatible w/ TH-less GHCs (#70)
   * Declare extensions the compiler must support (#83)
   * Fix curl for AppVeyor build (#79)
-  * Fix AppVeyor badge (#81
+  * Fix AppVeyor badge (#81)
   * Remove QQ from code coverage stats (#82)
-  * Rename Options, Context and replace Methods (#84)
+  * Rename Options, Context and Replace methods (#84)
 
 0.8.0.0 Chris Dornan <chris.dornan@irisconnect.co.uk> 2017-03-16
   * Tidy up the API after recent reorganization (#76)
