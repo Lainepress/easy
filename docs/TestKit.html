@@ -155,7 +155,7 @@ substVersion in_f out_f <span class="fu">=</span>
 
 <span class="ot">substVersion_ ::</span> (<span class="dt">IsRegex</span> <span class="dt">RE</span> a,<span class="dt">Replace</span> a) <span class="ot">=&gt;</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> a
 substVersion_ txt <span class="fu">=</span>
-    flip replaceAll ms <span class="fu">.</span> packE <span class="fu">.</span> presentVrn <span class="fu">&lt;$&gt;</span> readCurrentVersion
+    flip replaceAll ms <span class="fu">.</span> packR <span class="fu">.</span> presentVrn <span class="fu">&lt;$&gt;</span> readCurrentVersion
   <span class="kw">where</span>
     ms <span class="fu">=</span> txt <span class="fu">*=~</span> [re<span class="fu">|&lt;&lt;</span>\<span class="fu">$</span>version\<span class="fu">$&gt;&gt;|</span>]
 

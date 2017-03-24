@@ -109,6 +109,32 @@ Library
       Text.RE.Types.SearchReplace
 
     Default-Language:   Haskell2010
+
+    Other-Extensions:
+      AllowAmbiguousTypes
+      CPP
+      DeriveDataTypeable
+      DeriveGeneric
+      ExistentialQuantification
+      FlexibleContexts
+      FlexibleInstances
+      FunctionalDependencies
+      GeneralizedNewtypeDeriving
+      MultiParamTypeClasses
+      NoImplicitPrelude
+      OverloadedStrings
+      QuasiQuotes
+      RecordWildCards
+      ScopedTypeVariables
+      TemplateHaskell
+      TypeSynonymInstances
+      UndecidableInstances
+
+    if !impl(ghc >= 8.0)
+      Other-Extensions: TemplateHaskell
+    else
+      Other-Extensions: TemplateHaskellQuotes
+
     GHC-Options:
       -Wall
       -fwarn-tabs
@@ -143,6 +169,7 @@ Executable re-gen-cabals
       TestKit
 
     Default-Language:   Haskell2010
+
     GHC-Options:
       -Wall
       -fwarn-tabs
@@ -172,6 +199,7 @@ Test-Suite re-gen-cabals-test
       TestKit
 
     Default-Language:   Haskell2010
+
     GHC-Options:
       -Wall
       -fwarn-tabs
@@ -198,6 +226,7 @@ Executable re-gen-modules
     Main-Is:            re-gen-modules.lhs
 
     Default-Language:   Haskell2010
+
     GHC-Options:
       -Wall
       -fwarn-tabs
@@ -223,6 +252,7 @@ Test-Suite re-gen-modules-test
     Main-Is:            re-gen-modules.lhs
 
     Default-Language:   Haskell2010
+
     GHC-Options:
       -Wall
       -fwarn-tabs
@@ -251,6 +281,7 @@ Executable re-include
       TestKit
 
     Default-Language:   Haskell2010
+
     GHC-Options:
       -Wall
       -fwarn-tabs
@@ -276,6 +307,7 @@ Test-Suite re-include-test
       TestKit
 
     Default-Language:   Haskell2010
+
     GHC-Options:
       -Wall
       -fwarn-tabs
@@ -298,6 +330,7 @@ Executable re-nginx-log-processor
     Main-Is:            re-nginx-log-processor.lhs
 
     Default-Language:   Haskell2010
+
     GHC-Options:
       -Wall
       -fwarn-tabs
@@ -327,6 +360,7 @@ Test-Suite re-nginx-log-processor-test
     Main-Is:            re-nginx-log-processor.lhs
 
     Default-Language:   Haskell2010
+
     GHC-Options:
       -Wall
       -fwarn-tabs
@@ -359,6 +393,7 @@ Executable re-prep
       TestKit
 
     Default-Language:   Haskell2010
+
     GHC-Options:
       -Wall
       -fwarn-tabs
@@ -386,6 +421,7 @@ Test-Suite re-prep-test
       TestKit
 
     Default-Language:   Haskell2010
+
     GHC-Options:
       -Wall
       -fwarn-tabs
@@ -413,6 +449,7 @@ Executable re-tests
       TestKit
 
     Default-Language:   Haskell2010
+
     GHC-Options:
       -Wall
       -fwarn-tabs
@@ -450,6 +487,7 @@ Test-Suite re-tests-test
       TestKit
 
     Default-Language:   Haskell2010
+
     GHC-Options:
       -Wall
       -fwarn-tabs
@@ -488,6 +526,7 @@ Executable re-tutorial
 
     Default-Extensions: QuasiQuotes
     Default-Language:   Haskell2010
+
     GHC-Options:
       -Wall
       -fwarn-tabs
@@ -531,6 +570,7 @@ Test-Suite re-tutorial-test
 
     Default-Extensions: QuasiQuotes
     Default-Language:   Haskell2010
+
     GHC-Options:
       -Wall
       -fwarn-tabs
@@ -576,6 +616,7 @@ Test-Suite re-tutorial-os-test
     Extensions:         OverloadedStrings
     Default-Extensions: QuasiQuotes
     Default-Language:   Haskell2010
+
     GHC-Options:
       -Wall
       -fwarn-tabs

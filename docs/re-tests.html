@@ -295,7 +295,7 @@ parsing_tests <span class="fu">=</span> testGroup <span class="st">&quot;Parsing
         pk   <span class="fu">=</span> mk_pk mk0
 
 <span class="ot">        mk_pk ::</span> <span class="dt">Replace</span> s&#39; <span class="ot">=&gt;</span> (s&#39;<span class="ot">-&gt;</span><span class="dt">IO</span> re&#39;) <span class="ot">-&gt;</span> <span class="dt">String</span> <span class="ot">-&gt;</span> s&#39;
-        mk_pk _ <span class="fu">=</span> packE</code></pre></div>
+        mk_pk _ <span class="fu">=</span> packR</code></pre></div>
 <h3>
 core tests
 </h3>
@@ -377,8 +377,8 @@ replaceMethodstests <span class="fu">=</span> testGroup <span class="st">&quot;R
         <span class="st">&quot;(0:0:(0:1:a) (0:2:bbbb)) (1:0:(1:1:aa) (1:2:b))&quot;</span>
 
 <span class="ot">    fmt ::</span> (<span class="dt">IsString</span> s,<span class="dt">Replace</span> s) <span class="ot">=&gt;</span> a <span class="ot">-&gt;</span> <span class="dt">Location</span> <span class="ot">-&gt;</span> <span class="dt">Capture</span> s <span class="ot">-&gt;</span> <span class="dt">Maybe</span> s
-    fmt _ (<span class="dt">Location</span> i j) <span class="dt">Capture</span>{<span class="fu">..</span>} <span class="fu">=</span> <span class="dt">Just</span> <span class="fu">$</span> <span class="st">&quot;(&quot;</span> <span class="fu">&lt;&gt;</span> packE (show i) <span class="fu">&lt;&gt;</span> <span class="st">&quot;:&quot;</span> <span class="fu">&lt;&gt;</span>
-      packE (show_co j) <span class="fu">&lt;&gt;</span> <span class="st">&quot;:&quot;</span> <span class="fu">&lt;&gt;</span> capturedText <span class="fu">&lt;&gt;</span> <span class="st">&quot;)&quot;</span>
+    fmt _ (<span class="dt">Location</span> i j) <span class="dt">Capture</span>{<span class="fu">..</span>} <span class="fu">=</span> <span class="dt">Just</span> <span class="fu">$</span> <span class="st">&quot;(&quot;</span> <span class="fu">&lt;&gt;</span> packR (show i) <span class="fu">&lt;&gt;</span> <span class="st">&quot;:&quot;</span> <span class="fu">&lt;&gt;</span>
+      packR (show_co j) <span class="fu">&lt;&gt;</span> <span class="st">&quot;:&quot;</span> <span class="fu">&lt;&gt;</span> capturedText <span class="fu">&lt;&gt;</span> <span class="st">&quot;)&quot;</span>
 
     show_co (<span class="dt">CaptureOrdinal</span> j) <span class="fu">=</span> show j</code></pre></div>
 <h3>

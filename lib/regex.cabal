@@ -73,6 +73,32 @@ Library
       Text.RE.Types.SearchReplace
 
     Default-Language:   Haskell2010
+
+    Other-Extensions:
+      AllowAmbiguousTypes
+      CPP
+      DeriveDataTypeable
+      DeriveGeneric
+      ExistentialQuantification
+      FlexibleContexts
+      FlexibleInstances
+      FunctionalDependencies
+      GeneralizedNewtypeDeriving
+      MultiParamTypeClasses
+      NoImplicitPrelude
+      OverloadedStrings
+      QuasiQuotes
+      RecordWildCards
+      ScopedTypeVariables
+      TemplateHaskell
+      TypeSynonymInstances
+      UndecidableInstances
+
+    if !impl(ghc >= 8.0)
+      Other-Extensions: TemplateHaskell
+    else
+      Other-Extensions: TemplateHaskellQuotes
+
     GHC-Options:
       -Wall
       -fwarn-tabs

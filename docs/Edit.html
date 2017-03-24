@@ -176,9 +176,9 @@ applyLineEdit _    <span class="dt">Delete</span>         <span class="fu">=</sp
                     <span class="ot">-&gt;</span> m s
 select_edit_scripts lno ps0 s <span class="fu">=</span> select ps0
   <span class="kw">where</span>
-    select []           <span class="fu">=</span> return <span class="fu">$</span> appendNewlineE s
+    select []           <span class="fu">=</span> return <span class="fu">$</span> appendNewlineR s
     select (edit<span class="fu">:</span>edits) <span class="fu">=</span>
-      applyEdit appendNewlineE lno edit s <span class="fu">&gt;&gt;=</span> maybe (select edits) return
+      applyEdit appendNewlineR lno edit s <span class="fu">&gt;&gt;=</span> maybe (select edits) return
 
 <span class="ot">pipe_edit_scripts ::</span> (<span class="dt">IsRegex</span> re s,<span class="dt">Monad</span> m,<span class="dt">Functor</span> m)
                   <span class="ot">=&gt;</span> <span class="dt">LineNo</span>
@@ -186,7 +186,7 @@ select_edit_scripts lno ps0 s <span class="fu">=</span> select ps0
                   <span class="ot">-&gt;</span> s
                   <span class="ot">-&gt;</span> m s
 pipe_edit_scripts lno edits s0 <span class="fu">=</span>
-    appendNewlineE <span class="fu">&lt;$&gt;</span> foldr f (return s0) edits
+    appendNewlineR <span class="fu">&lt;$&gt;</span> foldr f (return s0) edits
   <span class="kw">where</span>
     f edit act <span class="fu">=</span> <span class="kw">do</span>
       s <span class="ot">&lt;-</span> act

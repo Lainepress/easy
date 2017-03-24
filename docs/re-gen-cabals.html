@@ -167,15 +167,16 @@ setup <span class="fu">=</span> <span class="dt">Ctx</span> <span class="fu">&lt
 
 <span class="ot">gc_script ::</span> <span class="dt">Ctx</span> <span class="ot">-&gt;</span> <span class="dt">Edits</span> <span class="dt">IO</span> <span class="dt">RE</span> <span class="dt">LBS.ByteString</span>
 gc_script ctx <span class="fu">=</span> <span class="dt">Select</span>
-    [ <span class="dt">LineEdit</span> [re<span class="fu">|^%</span><span class="dt">Werror</span><span class="fu">$|</span>]                                      <span class="fu">$</span> w_error_gen              ctx
-    , <span class="dt">LineEdit</span> [re<span class="fu">|^%</span><span class="dt">Wwarn</span><span class="fu">$|</span>]                                       <span class="fu">$</span> w_warn_gen               ctx
-    , <span class="dt">LineEdit</span> [re<span class="fu">|^%</span>filter<span class="fu">-</span>regex<span class="fu">-</span>with<span class="fu">-</span>pcre<span class="fu">$|</span>]                      <span class="fu">$</span> w_filter_pcre            ctx
-    , <span class="dt">LineEdit</span> [re<span class="fu">|^%-</span> <span class="fu">+$</span>{pkg}(<span class="fu">@</span>{<span class="fu">%</span>id<span class="fu">-</span>}) <span class="fu">+$</span>{cond}(<span class="fu">.*</span>)<span class="fu">$|</span>]             <span class="fu">$</span> cond_gen                 ctx
-    , <span class="dt">LineEdit</span> [re<span class="fu">|^%</span>build<span class="fu">-</span>depends <span class="fu">+$</span>{list}(<span class="fu">@</span>{<span class="fu">%</span>id<span class="fu">-</span>}( <span class="fu">+@</span>{<span class="fu">%</span>id<span class="fu">-</span>})<span class="fu">+</span>)<span class="fu">$|</span>] <span class="fu">$</span> build_depends_gen        ctx
-    , <span class="dt">LineEdit</span> [re<span class="fu">|^%</span>test <span class="fu">+$</span>{i}(<span class="fu">@</span>{<span class="fu">%</span>id<span class="fu">-</span>})<span class="fu">$|</span>]                         <span class="fu">$</span> test_exe_gen <span class="dt">True</span>  <span class="dt">False</span> ctx
-    , <span class="dt">LineEdit</span> [re<span class="fu">|^%</span>exe <span class="fu">+$</span>{i}(<span class="fu">@</span>{<span class="fu">%</span>id<span class="fu">-</span>})<span class="fu">$|</span>]                          <span class="fu">$</span> test_exe_gen <span class="dt">False</span> <span class="dt">True</span>  ctx
-    , <span class="dt">LineEdit</span> [re<span class="fu">|^%</span>test<span class="fu">-</span>exe <span class="fu">+$</span>{i}(<span class="fu">@</span>{<span class="fu">%</span>id<span class="fu">-</span>})<span class="fu">$|</span>]                     <span class="fu">$</span> test_exe_gen <span class="dt">True</span>  <span class="dt">True</span>  ctx
-    , <span class="dt">LineEdit</span> [re<span class="fu">|^.*$|</span>]                                           <span class="fu">$</span> default_gen              ctx
+    [ <span class="dt">LineEdit</span> [re<span class="fu">|^%</span><span class="dt">Werror</span><span class="fu">$|</span>]                            <span class="fu">$</span> w_error_gen              ctx
+    , <span class="dt">LineEdit</span> [re<span class="fu">|^%</span><span class="dt">Wwarn</span><span class="fu">$|</span>]                             <span class="fu">$</span> w_warn_gen               ctx
+    , <span class="dt">LineEdit</span> [re<span class="fu">|^%</span>filter<span class="fu">-</span>regex<span class="fu">-</span>with<span class="fu">-</span>pcre<span class="fu">$|</span>]            <span class="fu">$</span> w_filter_pcre            ctx
+    , <span class="dt">LineEdit</span> [re<span class="fu">|^%-</span> <span class="fu">+$</span>{pkg}(<span class="fu">@</span>{<span class="fu">%</span>id<span class="fu">-</span>}) <span class="fu">+$</span>{cond}(<span class="fu">.*</span>)<span class="fu">$|</span>]   <span class="fu">$</span> cond_gen                 ctx
+    , <span class="dt">LineEdit</span> [re<span class="fu">|^%</span>build<span class="fu">-</span>depends<span class="fu">-$</span>{lb}(lib<span class="fu">|</span>prog) <span class="fu">+$</span>{list}(<span class="fu">@</span>{<span class="fu">%</span>id<span class="fu">-</span>}( <span class="fu">+@</span>{<span class="fu">%</span>id<span class="fu">-</span>})<span class="fu">+</span>)<span class="fu">$|</span>]
+                                                          <span class="fu">$</span> build_depends_gen        ctx
+    , <span class="dt">LineEdit</span> [re<span class="fu">|^%</span>test <span class="fu">+$</span>{i}(<span class="fu">@</span>{<span class="fu">%</span>id<span class="fu">-</span>})<span class="fu">$|</span>]               <span class="fu">$</span> test_exe_gen <span class="dt">True</span>  <span class="dt">False</span> ctx
+    , <span class="dt">LineEdit</span> [re<span class="fu">|^%</span>exe <span class="fu">+$</span>{i}(<span class="fu">@</span>{<span class="fu">%</span>id<span class="fu">-</span>})<span class="fu">$|</span>]                <span class="fu">$</span> test_exe_gen <span class="dt">False</span> <span class="dt">True</span>  ctx
+    , <span class="dt">LineEdit</span> [re<span class="fu">|^%</span>test<span class="fu">-</span>exe <span class="fu">+$</span>{i}(<span class="fu">@</span>{<span class="fu">%</span>id<span class="fu">-</span>})<span class="fu">$|</span>]           <span class="fu">$</span> test_exe_gen <span class="dt">True</span>  <span class="dt">True</span>  ctx
+    , <span class="dt">LineEdit</span> [re<span class="fu">|^.*$|</span>]                                 <span class="fu">$</span> default_gen              ctx
     ]
 
 w_error_gen, w_warn_gen, w_filter_pcre, cond_gen, build_depends_gen,
@@ -201,8 +202,9 @@ build_depends_gen ctx<span class="fu">@</span><span class="dt">Ctx</span>{<span 
     we <span class="ot">&lt;-</span> readIORef _ctx_w_error
     fp <span class="ot">&lt;-</span> readIORef _ctx_filter_pcre
     mp <span class="ot">&lt;-</span> readIORef _ctx_package_constraints
-    put ctx <span class="fu">$</span> mk_build_depends we fp mp lst
+    put ctx <span class="fu">$</span> mk_build_depends lb we fp mp lst
   <span class="kw">where</span>
+    lb   <span class="fu">=</span> captureText [cp<span class="fu">|</span>lb<span class="fu">|</span>] mtch <span class="fu">==</span> <span class="st">&quot;lib&quot;</span>
     lst  <span class="fu">=</span> LBS.words <span class="fu">$</span> captureText [cp<span class="fu">|</span>list<span class="fu">|</span>] mtch
     mtch <span class="fu">=</span> allMatches mtchs <span class="fu">!!</span> <span class="dv">0</span>
 
@@ -268,12 +270,41 @@ mk_test_exe is_t te te_lbs_kw <span class="fu">=</span> (<span class="fu">&lt;&g
 
 <span class="ot">mk_build_depends ::</span> <span class="dt">Bool</span>
                  <span class="ot">-&gt;</span> <span class="dt">Bool</span>
+                 <span class="ot">-&gt;</span> <span class="dt">Bool</span>
                  <span class="ot">-&gt;</span> <span class="dt">Map.Map</span> <span class="dt">LBS.ByteString</span> <span class="dt">LBS.ByteString</span>
                  <span class="ot">-&gt;</span> [<span class="dt">LBS.ByteString</span>]
                  <span class="ot">-&gt;</span> <span class="dt">LBS.ByteString</span>
-mk_build_depends we fp mp pks0 <span class="fu">=</span> LBS.unlines <span class="fu">$</span>
+mk_build_depends lb we fp mp pks0 <span class="fu">=</span> LBS.unlines <span class="fu">$</span>
         [ <span class="st">&quot;    Default-Language:   Haskell2010&quot;</span>
-        , <span class="st">&quot;    GHC-Options:&quot;</span>
+        , <span class="st">&quot;&quot;</span>
+        ] <span class="fu">++</span> filter (<span class="kw">if</span> lb <span class="kw">then</span> const <span class="dt">True</span> <span class="kw">else</span> const <span class="dt">False</span>)
+        [ <span class="st">&quot;    Other-Extensions:&quot;</span>
+        , <span class="st">&quot;      AllowAmbiguousTypes&quot;</span>
+        , <span class="st">&quot;      CPP&quot;</span>
+        , <span class="st">&quot;      DeriveDataTypeable&quot;</span>
+        , <span class="st">&quot;      DeriveGeneric&quot;</span>
+        , <span class="st">&quot;      ExistentialQuantification&quot;</span>
+        , <span class="st">&quot;      FlexibleContexts&quot;</span>
+        , <span class="st">&quot;      FlexibleInstances&quot;</span>
+        , <span class="st">&quot;      FunctionalDependencies&quot;</span>
+        , <span class="st">&quot;      GeneralizedNewtypeDeriving&quot;</span>
+        , <span class="st">&quot;      MultiParamTypeClasses&quot;</span>
+        , <span class="st">&quot;      NoImplicitPrelude&quot;</span>
+        , <span class="st">&quot;      OverloadedStrings&quot;</span>
+        , <span class="st">&quot;      QuasiQuotes&quot;</span>
+        , <span class="st">&quot;      RecordWildCards&quot;</span>
+        , <span class="st">&quot;      ScopedTypeVariables&quot;</span>
+        , <span class="st">&quot;      TemplateHaskell&quot;</span>
+        , <span class="st">&quot;      TypeSynonymInstances&quot;</span>
+        , <span class="st">&quot;      UndecidableInstances&quot;</span>
+        , <span class="st">&quot;&quot;</span>
+        , <span class="st">&quot;    if !impl(ghc &gt;= 8.0)&quot;</span>
+        , <span class="st">&quot;      Other-Extensions: TemplateHaskell&quot;</span>
+        , <span class="st">&quot;    else&quot;</span>
+        , <span class="st">&quot;      Other-Extensions: TemplateHaskellQuotes&quot;</span>
+        , <span class="st">&quot;&quot;</span>
+        ] <span class="fu">++</span>
+        [ <span class="st">&quot;    GHC-Options:&quot;</span>
         , <span class="st">&quot;      -Wall&quot;</span>
         , <span class="st">&quot;      -fwarn-tabs&quot;</span>
         , <span class="st">&quot;      &quot;</span> <span class="fu">&lt;&gt;</span> w_error_or_warn

@@ -118,36 +118,36 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <span class="kw">import           </span><span class="dt">Text.Regex.TDFA.Text</span>()
 <span class="kw">import           </span><span class="dt">Text.Regex.TDFA.Text.Lazy</span>()</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="co">-- | Replace provides the missing methods needed to replace the matched</span>
-<span class="co">-- text; lengthE is the minimum implementation</span>
+<span class="co">-- text; lengthR is the minimum implementation</span>
 <span class="kw">class</span> (<span class="dt">Show</span> a,<span class="dt">Eq</span> a,<span class="dt">Ord</span> a,<span class="dt">Extract</span> a,<span class="dt">Monoid</span> a) <span class="ot">=&gt;</span> <span class="dt">Replace</span> a <span class="kw">where</span>
   <span class="co">-- | length function for a</span>
-<span class="ot">  lengthE        ::</span> a <span class="ot">-&gt;</span> <span class="dt">Int</span>
+<span class="ot">  lengthR        ::</span> a <span class="ot">-&gt;</span> <span class="dt">Int</span>
   <span class="co">-- | inject String into a</span>
-<span class="ot">  packE          ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> a
+<span class="ot">  packR          ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> a
   <span class="co">-- | project a onto a String</span>
-<span class="ot">  unpackE        ::</span> a <span class="ot">-&gt;</span> <span class="dt">String</span>
+<span class="ot">  unpackR        ::</span> a <span class="ot">-&gt;</span> <span class="dt">String</span>
   <span class="co">-- | inject into Text</span>
-<span class="ot">  textifyE       ::</span> a <span class="ot">-&gt;</span> <span class="dt">T.Text</span>
+<span class="ot">  textifyR       ::</span> a <span class="ot">-&gt;</span> <span class="dt">T.Text</span>
   <span class="co">-- | project Text onto a</span>
-<span class="ot">  detextifyE     ::</span> <span class="dt">T.Text</span> <span class="ot">-&gt;</span> a
+<span class="ot">  detextifyR     ::</span> <span class="dt">T.Text</span> <span class="ot">-&gt;</span> a
   <span class="co">-- | split into lines</span>
-<span class="ot">  linesE         ::</span> a <span class="ot">-&gt;</span> [a]
+<span class="ot">  linesR         ::</span> a <span class="ot">-&gt;</span> [a]
   <span class="co">-- | concatenate a list of lines</span>
-<span class="ot">  unlinesE       ::</span> [a] <span class="ot">-&gt;</span> a
+<span class="ot">  unlinesR       ::</span> [a] <span class="ot">-&gt;</span> a
   <span class="co">-- | append a newline</span>
-<span class="ot">  appendNewlineE ::</span> a <span class="ot">-&gt;</span> a
+<span class="ot">  appendNewlineR ::</span> a <span class="ot">-&gt;</span> a
   <span class="co">-- | apply a substitution function to a Capture</span>
-<span class="ot">  substE         ::</span> (a<span class="ot">-&gt;</span>a) <span class="ot">-&gt;</span> <span class="dt">Capture</span> a <span class="ot">-&gt;</span> a
+<span class="ot">  substR         ::</span> (a<span class="ot">-&gt;</span>a) <span class="ot">-&gt;</span> <span class="dt">Capture</span> a <span class="ot">-&gt;</span> a
   <span class="co">-- | convert a template containing $0, $1, etc., in the first</span>
   <span class="co">-- argument, into a &#39;phi&#39; replacement function for use with</span>
   <span class="co">-- replaceAllCaptures and replaceCaptures</span>
-<span class="ot">  parseTemplateE ::</span> a <span class="ot">-&gt;</span> <span class="dt">Match</span> a <span class="ot">-&gt;</span> <span class="dt">Location</span> <span class="ot">-&gt;</span> <span class="dt">Capture</span> a <span class="ot">-&gt;</span> <span class="dt">Maybe</span> a
+<span class="ot">  parseTemplateR ::</span> a <span class="ot">-&gt;</span> <span class="dt">Match</span> a <span class="ot">-&gt;</span> <span class="dt">Location</span> <span class="ot">-&gt;</span> <span class="dt">Capture</span> a <span class="ot">-&gt;</span> <span class="dt">Maybe</span> a
 
-  textifyE       <span class="fu">=</span> T.pack <span class="fu">.</span> unpackE
-  detextifyE     <span class="fu">=</span> packE  <span class="fu">.</span> T.unpack
-  appendNewlineE <span class="fu">=</span> (<span class="fu">&lt;&gt;</span> packE <span class="st">&quot;\n&quot;</span>)
+  textifyR       <span class="fu">=</span> T.pack <span class="fu">.</span> unpackR
+  detextifyR     <span class="fu">=</span> packR  <span class="fu">.</span> T.unpack
+  appendNewlineR <span class="fu">=</span> (<span class="fu">&lt;&gt;</span> packR <span class="st">&quot;\n&quot;</span>)
 
-  substE f m<span class="fu">@</span><span class="dt">Capture</span>{<span class="fu">..</span>} <span class="fu">=</span>
+  substR f m<span class="fu">@</span><span class="dt">Capture</span>{<span class="fu">..</span>} <span class="fu">=</span>
     capturePrefix m <span class="fu">&lt;&gt;</span> f capturedText <span class="fu">&lt;&gt;</span> captureSuffix m</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="co">-- | a selction of the Replace methods can be encapsulated with ReplaceMethods</span>
 <span class="co">-- for the higher-order replacement functions</span>
@@ -161,8 +161,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <span class="ot">replaceMethods ::</span> <span class="dt">Replace</span> a <span class="ot">=&gt;</span> <span class="dt">ReplaceMethods</span> a
 replaceMethods <span class="fu">=</span>
   <span class="dt">ReplaceMethods</span>
-    { methodLength <span class="fu">=</span> lengthE
-    , methodSubst  <span class="fu">=</span> substE
+    { methodLength <span class="fu">=</span> lengthR
+    , methodSubst  <span class="fu">=</span> substR
     }</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="co">-- | @REContext@ specifies which contexts the substitutions should be applied</span>
 <span class="kw">data</span> <span class="dt">REContext</span>
@@ -199,7 +199,7 @@ isTopLocation <span class="fu">=</span> (<span class="fu">==</span><span class="
            <span class="ot">=&gt;</span> a
            <span class="ot">-&gt;</span> <span class="dt">Matches</span> a
            <span class="ot">-&gt;</span> a
-replaceAll tpl ac <span class="fu">=</span> replaceAllCaptures <span class="dt">TOP</span> (parseTemplateE tpl) ac</code></pre></div>
+replaceAll tpl ac <span class="fu">=</span> replaceAllCaptures <span class="dt">TOP</span> (parseTemplateR tpl) ac</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="co">-- | substitutes using a function that takes the full Match</span>
 <span class="co">-- context and returns the same replacement text as the _phi_phi</span>
 <span class="co">-- context.</span>
@@ -269,7 +269,7 @@ replaceAllCapturesM r ctx phi_ <span class="dt">Matches</span>{<span class="fu">
         <span class="ot">=&gt;</span> a
         <span class="ot">-&gt;</span> <span class="dt">Match</span> a
         <span class="ot">-&gt;</span> a
-replace tpl c <span class="fu">=</span> replaceCaptures <span class="dt">TOP</span> (parseTemplateE tpl) c</code></pre></div>
+replace tpl c <span class="fu">=</span> replaceCaptures <span class="dt">TOP</span> (parseTemplateR tpl) c</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="co">-- | substitutes using a function that takes the full Match</span>
 <span class="co">-- context and returns the same replacement text as the _phi_phi</span>
 <span class="co">-- context.</span>
@@ -344,67 +344,67 @@ replaceCapturesM <span class="dt">ReplaceMethods</span>{<span class="fu">..</spa
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="co">-- the Replace instances</span>
 
 <span class="kw">instance</span> <span class="dt">Replace</span> [<span class="dt">Char</span>] <span class="kw">where</span>
-  lengthE         <span class="fu">=</span> length
-  packE           <span class="fu">=</span> id
-  unpackE         <span class="fu">=</span> id
-  textifyE        <span class="fu">=</span> T.pack
-  detextifyE      <span class="fu">=</span> T.unpack
-  linesE          <span class="fu">=</span> lines
-  unlinesE        <span class="fu">=</span> unlines
-  appendNewlineE  <span class="fu">=</span> (<span class="fu">&lt;&gt;</span><span class="st">&quot;\n&quot;</span>)
-  parseTemplateE  <span class="fu">=</span> parseTemplateE&#39; id
+  lengthR         <span class="fu">=</span> length
+  packR           <span class="fu">=</span> id
+  unpackR         <span class="fu">=</span> id
+  textifyR        <span class="fu">=</span> T.pack
+  detextifyR      <span class="fu">=</span> T.unpack
+  linesR          <span class="fu">=</span> lines
+  unlinesR        <span class="fu">=</span> unlines
+  appendNewlineR  <span class="fu">=</span> (<span class="fu">&lt;&gt;</span><span class="st">&quot;\n&quot;</span>)
+  parseTemplateR  <span class="fu">=</span> parseTemplateR&#39; id
 
 <span class="kw">instance</span> <span class="dt">Replace</span> <span class="dt">B.ByteString</span> <span class="kw">where</span>
-  lengthE         <span class="fu">=</span> B.length
-  packE           <span class="fu">=</span> B.pack
-  unpackE         <span class="fu">=</span> B.unpack
-  textifyE        <span class="fu">=</span> TE.decodeUtf8
-  detextifyE      <span class="fu">=</span> TE.encodeUtf8
-  linesE          <span class="fu">=</span> B.lines
-  unlinesE        <span class="fu">=</span> B.unlines
-  appendNewlineE  <span class="fu">=</span> (<span class="fu">&lt;&gt;</span><span class="st">&quot;\n&quot;</span>)
-  parseTemplateE  <span class="fu">=</span> parseTemplateE&#39; B.unpack
+  lengthR         <span class="fu">=</span> B.length
+  packR           <span class="fu">=</span> B.pack
+  unpackR         <span class="fu">=</span> B.unpack
+  textifyR        <span class="fu">=</span> TE.decodeUtf8
+  detextifyR      <span class="fu">=</span> TE.encodeUtf8
+  linesR          <span class="fu">=</span> B.lines
+  unlinesR        <span class="fu">=</span> B.unlines
+  appendNewlineR  <span class="fu">=</span> (<span class="fu">&lt;&gt;</span><span class="st">&quot;\n&quot;</span>)
+  parseTemplateR  <span class="fu">=</span> parseTemplateR&#39; B.unpack
 
 <span class="kw">instance</span> <span class="dt">Replace</span> <span class="dt">LBS.ByteString</span> <span class="kw">where</span>
-  lengthE         <span class="fu">=</span> fromEnum <span class="fu">.</span> LBS.length
-  packE           <span class="fu">=</span> LBS.pack
-  unpackE         <span class="fu">=</span> LBS.unpack
-  textifyE        <span class="fu">=</span> TE.decodeUtf8  <span class="fu">.</span> LBS.toStrict
-  linesE          <span class="fu">=</span> LBS.lines
-  unlinesE        <span class="fu">=</span> LBS.unlines
-  detextifyE      <span class="fu">=</span> LBS.fromStrict <span class="fu">.</span> TE.encodeUtf8
-  appendNewlineE  <span class="fu">=</span> (<span class="fu">&lt;&gt;</span><span class="st">&quot;\n&quot;</span>)
-  parseTemplateE  <span class="fu">=</span> parseTemplateE&#39; LBS.unpack
+  lengthR         <span class="fu">=</span> fromEnum <span class="fu">.</span> LBS.length
+  packR           <span class="fu">=</span> LBS.pack
+  unpackR         <span class="fu">=</span> LBS.unpack
+  textifyR        <span class="fu">=</span> TE.decodeUtf8  <span class="fu">.</span> LBS.toStrict
+  linesR          <span class="fu">=</span> LBS.lines
+  unlinesR        <span class="fu">=</span> LBS.unlines
+  detextifyR      <span class="fu">=</span> LBS.fromStrict <span class="fu">.</span> TE.encodeUtf8
+  appendNewlineR  <span class="fu">=</span> (<span class="fu">&lt;&gt;</span><span class="st">&quot;\n&quot;</span>)
+  parseTemplateR  <span class="fu">=</span> parseTemplateR&#39; LBS.unpack
 
 <span class="kw">instance</span> <span class="dt">Replace</span> (<span class="dt">S.Seq</span> <span class="dt">Char</span>) <span class="kw">where</span>
-  lengthE         <span class="fu">=</span> S.length
-  packE           <span class="fu">=</span> S.fromList
-  unpackE         <span class="fu">=</span> F.toList
-  linesE          <span class="fu">=</span> map packE <span class="fu">.</span> lines <span class="fu">.</span> unpackE
-  unlinesE        <span class="fu">=</span> packE <span class="fu">.</span> unlines <span class="fu">.</span> map unpackE
-  parseTemplateE  <span class="fu">=</span> parseTemplateE&#39; F.toList
+  lengthR         <span class="fu">=</span> S.length
+  packR           <span class="fu">=</span> S.fromList
+  unpackR         <span class="fu">=</span> F.toList
+  linesR          <span class="fu">=</span> map packR <span class="fu">.</span> lines <span class="fu">.</span> unpackR
+  unlinesR        <span class="fu">=</span> packR <span class="fu">.</span> unlines <span class="fu">.</span> map unpackR
+  parseTemplateR  <span class="fu">=</span> parseTemplateR&#39; F.toList
 
 <span class="kw">instance</span> <span class="dt">Replace</span> <span class="dt">T.Text</span> <span class="kw">where</span>
-  lengthE         <span class="fu">=</span> T.length
-  packE           <span class="fu">=</span> T.pack
-  unpackE         <span class="fu">=</span> T.unpack
-  textifyE        <span class="fu">=</span> id
-  detextifyE      <span class="fu">=</span> id
-  linesE          <span class="fu">=</span> T.lines
-  unlinesE        <span class="fu">=</span> T.unlines
-  appendNewlineE  <span class="fu">=</span> (<span class="fu">&lt;&gt;</span><span class="st">&quot;\n&quot;</span>)
-  parseTemplateE  <span class="fu">=</span> parseTemplateE&#39; T.unpack
+  lengthR         <span class="fu">=</span> T.length
+  packR           <span class="fu">=</span> T.pack
+  unpackR         <span class="fu">=</span> T.unpack
+  textifyR        <span class="fu">=</span> id
+  detextifyR      <span class="fu">=</span> id
+  linesR          <span class="fu">=</span> T.lines
+  unlinesR        <span class="fu">=</span> T.unlines
+  appendNewlineR  <span class="fu">=</span> (<span class="fu">&lt;&gt;</span><span class="st">&quot;\n&quot;</span>)
+  parseTemplateR  <span class="fu">=</span> parseTemplateR&#39; T.unpack
 
 <span class="kw">instance</span> <span class="dt">Replace</span> <span class="dt">LT</span><span class="fu">.</span><span class="dt">Text</span> <span class="kw">where</span>
-  lengthE         <span class="fu">=</span> fromEnum <span class="fu">.</span> <span class="dt">LT</span><span class="fu">.</span>length
-  packE           <span class="fu">=</span> <span class="dt">LT</span><span class="fu">.</span>pack
-  unpackE         <span class="fu">=</span> <span class="dt">LT</span><span class="fu">.</span>unpack
-  textifyE        <span class="fu">=</span> <span class="dt">LT</span><span class="fu">.</span>toStrict
-  detextifyE      <span class="fu">=</span> <span class="dt">LT</span><span class="fu">.</span>fromStrict
-  linesE          <span class="fu">=</span> <span class="dt">LT</span><span class="fu">.</span>lines
-  unlinesE        <span class="fu">=</span> <span class="dt">LT</span><span class="fu">.</span>unlines
-  appendNewlineE  <span class="fu">=</span> (<span class="fu">&lt;&gt;</span><span class="st">&quot;\n&quot;</span>)
-  parseTemplateE  <span class="fu">=</span> parseTemplateE&#39; <span class="dt">LT</span><span class="fu">.</span>unpack</code></pre></div>
+  lengthR         <span class="fu">=</span> fromEnum <span class="fu">.</span> <span class="dt">LT</span><span class="fu">.</span>length
+  packR           <span class="fu">=</span> <span class="dt">LT</span><span class="fu">.</span>pack
+  unpackR         <span class="fu">=</span> <span class="dt">LT</span><span class="fu">.</span>unpack
+  textifyR        <span class="fu">=</span> <span class="dt">LT</span><span class="fu">.</span>toStrict
+  detextifyR      <span class="fu">=</span> <span class="dt">LT</span><span class="fu">.</span>fromStrict
+  linesR          <span class="fu">=</span> <span class="dt">LT</span><span class="fu">.</span>lines
+  unlinesR        <span class="fu">=</span> <span class="dt">LT</span><span class="fu">.</span>unlines
+  appendNewlineR  <span class="fu">=</span> (<span class="fu">&lt;&gt;</span><span class="st">&quot;\n&quot;</span>)
+  parseTemplateR  <span class="fu">=</span> parseTemplateR&#39; <span class="dt">LT</span><span class="fu">.</span>unpack</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="co">-- | expand all of the @{..} macros in the RE in the argument String</span>
 <span class="co">-- according to the Macros argument, preprocessing the RE String</span>
 <span class="co">-- according to the Mode argument (used internally)</span>
@@ -438,7 +438,7 @@ lift_phi phi_ <span class="fu">=</span> phi
 <span class="co">-- in the third argument (the result of a single match of the RE</span>
 <span class="co">-- against the input text to be matched); Nothing is returned if the</span>
 <span class="co">-- inputs are not well formed (currently all inputs are well formed)</span>
-<span class="ot">parseTemplateE&#39; ::</span> ( <span class="dt">Replace</span> a
+<span class="ot">parseTemplateR&#39; ::</span> ( <span class="dt">Replace</span> a
                    , <span class="dt">RegexContext</span> <span class="dt">Regex</span> a (<span class="dt">Matches</span> a)
                    , <span class="dt">RegexMaker</span>   <span class="dt">Regex</span> <span class="dt">CompOption</span> <span class="dt">ExecOption</span> <span class="dt">String</span>
                    )
@@ -448,7 +448,7 @@ lift_phi phi_ <span class="fu">=</span> phi
                    <span class="ot">-&gt;</span> <span class="dt">Location</span>
                    <span class="ot">-&gt;</span> <span class="dt">Capture</span> a
                    <span class="ot">-&gt;</span> <span class="dt">Maybe</span> a
-parseTemplateE&#39; unpack tpl mtch _ _ <span class="fu">=</span>
+parseTemplateR&#39; unpack tpl mtch _ _ <span class="fu">=</span>
     <span class="dt">Just</span> <span class="fu">$</span> replaceAllCaptures <span class="dt">TOP</span> phi <span class="fu">$</span> scan_template tpl
   <span class="kw">where</span>
     phi t_mtch _ _ <span class="fu">=</span> either <span class="dt">Just</span> this <span class="fu">$</span> parse_template_capture unpack t_mtch

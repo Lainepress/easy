@@ -626,12 +626,12 @@ For example:
 <p>The regex replacement templates are parsed with code similar to this.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">type</span> <span class="dt">Template</span> <span class="fu">=</span> <span class="dt">String</span>
 
-<span class="ot">parseTemplateE&#39; ::</span> <span class="dt">Template</span>
+<span class="ot">parseTemplateR&#39; ::</span> <span class="dt">Template</span>
                 <span class="ot">-&gt;</span> <span class="dt">Match</span> <span class="dt">String</span>
                 <span class="ot">-&gt;</span> <span class="dt">Location</span>
                 <span class="ot">-&gt;</span> <span class="dt">Capture</span> <span class="dt">String</span>
                 <span class="ot">-&gt;</span> <span class="dt">Maybe</span> <span class="dt">String</span>
-parseTemplateE&#39; tpl mtch _ _ <span class="fu">=</span>
+parseTemplateR&#39; tpl mtch _ _ <span class="fu">=</span>
     <span class="dt">Just</span> <span class="fu">$</span> replaceAllCaptures <span class="dt">TOP</span> phi <span class="fu">$</span>
       tpl <span class="fu">*=~</span> [re<span class="fu">|</span>\<span class="fu">$$</span>{arg}(\<span class="fu">$|</span>[<span class="dv">0</span><span class="fu">-</span><span class="dv">9</span>]<span class="fu">+|</span>\{<span class="fu">$</span>{name}([<span class="fu">^</span>{}]<span class="fu">+</span>)\})<span class="fu">|</span>]
   <span class="kw">where</span>
@@ -648,7 +648,7 @@ parseTemplateE&#39; tpl mtch _ _ <span class="fu">=</span>
         this cid <span class="fu">=</span> capturedText <span class="fu">&lt;$&gt;</span> mtch <span class="fu">!$?</span> cid
 
 <span class="ot">my_replace ::</span> <span class="dt">RE</span> <span class="ot">-&gt;</span> <span class="dt">Template</span><span class="ot">-&gt;</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">String</span>
-my_replace rex tpl src <span class="fu">=</span> replaceAllCaptures <span class="dt">TOP</span> (parseTemplateE&#39; tpl) <span class="fu">$</span> src <span class="fu">*=~</span> rex</code></pre></div>
+my_replace rex tpl src <span class="fu">=</span> replaceAllCaptures <span class="dt">TOP</span> (parseTemplateR&#39; tpl) <span class="fu">$</span> src <span class="fu">*=~</span> rex</code></pre></div>
 <p>It can be tested with our date-reformater example.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">date_reformat ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">String</span>
 date_reformat <span class="fu">=</span> my_replace [re<span class="fu">|$</span>{y}([<span class="dv">0</span><span class="fu">-</span><span class="dv">9</span>]{<span class="dv">4</span>})<span class="fu">-$</span>{m}([<span class="dv">0</span><span class="fu">-</span><span class="dv">9</span>]{<span class="dv">2</span>})<span class="fu">-$</span>{d}([<span class="dv">0</span><span class="fu">-</span><span class="dv">9</span>]{<span class="dv">2</span>})<span class="fu">|</span>] <span class="st">&quot;${y}/${m}/${d}&quot;</span></code></pre></div>

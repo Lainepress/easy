@@ -606,7 +606,7 @@ parse_error cs <span class="fu">=</span>
   <span class="kw">deriving</span> (<span class="dt">IsString</span>,<span class="dt">Ord</span>,<span class="dt">Eq</span>,<span class="dt">Show</span>)
 
 <span class="ot">parse_user ::</span> <span class="dt">Replace</span> a <span class="ot">=&gt;</span> a <span class="ot">-&gt;</span> <span class="dt">Maybe</span> <span class="dt">User</span>
-parse_user <span class="fu">=</span> <span class="dt">Just</span> <span class="fu">.</span> <span class="dt">User</span> <span class="fu">.</span> LBS.pack <span class="fu">.</span> unpackE
+parse_user <span class="fu">=</span> <span class="dt">Just</span> <span class="fu">.</span> <span class="dt">User</span> <span class="fu">.</span> LBS.pack <span class="fu">.</span> unpackR
 
 
 <span class="fu">--</span>
@@ -614,7 +614,7 @@ parse_user <span class="fu">=</span> <span class="dt">Just</span> <span class="f
 <span class="fu">--</span>
 
 <span class="ot">parse_pid_tid ::</span> <span class="dt">Replace</span> a <span class="ot">=&gt;</span> a <span class="ot">-&gt;</span> <span class="dt">Maybe</span> (<span class="dt">Int</span>,<span class="dt">Int</span>)
-parse_pid_tid x <span class="fu">=</span> <span class="kw">case</span> allMatches <span class="fu">$</span> unpackE x <span class="fu">S.*=~</span> [re<span class="fu">|@</span>{<span class="fu">%</span>nat}<span class="fu">|</span>] <span class="kw">of</span>
+parse_pid_tid x <span class="fu">=</span> <span class="kw">case</span> allMatches <span class="fu">$</span> unpackR x <span class="fu">S.*=~</span> [re<span class="fu">|@</span>{<span class="fu">%</span>nat}<span class="fu">|</span>] <span class="kw">of</span>
     [cs,cs&#39;] <span class="ot">-&gt;</span> (,) <span class="fu">&lt;$&gt;</span> p cs <span class="fu">&lt;*&gt;</span> p cs&#39;
     _        <span class="ot">-&gt;</span> <span class="dt">Nothing</span>
   <span class="kw">where</span>
