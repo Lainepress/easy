@@ -54,7 +54,7 @@ Extra-Source-Files:
     src/Text/RE/TDFA/Text/Lazy.hs
 
 
-Cabal-Version:          >= 1.16
+Cabal-Version:          >= 1.10
 
 Source-Repository head
     type:               git
