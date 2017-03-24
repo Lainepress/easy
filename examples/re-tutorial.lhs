@@ -718,12 +718,12 @@ The regex replacement templates are parsed with code similar to this.
 \begin{code}
 type Template = String
 
-parseTemplateE' :: Template
+parseTemplateR' :: Template
                 -> Match String
                 -> Location
                 -> Capture String
                 -> Maybe String
-parseTemplateE' tpl mtch _ _ =
+parseTemplateR' tpl mtch _ _ =
     Just $ replaceAllCaptures TOP phi $
       tpl *=~ [re|\$${arg}(\$|[0-9]+|\{${name}([^{}]+)\})|]
   where
@@ -740,7 +740,7 @@ parseTemplateE' tpl mtch _ _ =
         this cid = capturedText <$> mtch !$? cid
 
 my_replace :: RE -> Template-> String -> String
-my_replace rex tpl src = replaceAllCaptures TOP (parseTemplateE' tpl) $ src *=~ rex
+my_replace rex tpl src = replaceAllCaptures TOP (parseTemplateR' tpl) $ src *=~ rex
 \end{code}
 
 It can be tested with our date-reformater example.

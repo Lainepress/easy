@@ -94,7 +94,7 @@ substVersion in_f out_f =
 
 substVersion_ :: (IsRegex RE a,Replace a) => a -> IO a
 substVersion_ txt =
-    flip replaceAll ms . packE . presentVrn <$> readCurrentVersion
+    flip replaceAll ms . packR . presentVrn <$> readCurrentVersion
   where
     ms = txt *=~ [re|<<\$version\$>>|]
 

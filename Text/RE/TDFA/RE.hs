@@ -285,7 +285,7 @@ unsafeCompileSearchReplace :: ( IsOption o RE CompOption ExecOption
                            -> String
                            -> SearchReplace RE s
 unsafeCompileSearchReplace os =
-    unsafeCompileSearchReplace_ packE $ compileRegexWithREOptions os
+    unsafeCompileSearchReplace_ packR $ compileRegexWithREOptions os
 
 unsafeCompileRegex_ :: REOptions -> String -> RE
 unsafeCompileRegex_ os = either oops id . compileRegex_ os

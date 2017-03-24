@@ -104,9 +104,9 @@ import qualified Text.Regex.TDFA               as TDFA
 instance IsRegex RE String where
   matchOnce     = flip (?=~)
   matchMany     = flip (*=~)
-  makeRegexWith = \o -> compileRegexWith o . unpackE
-  makeRegex     = compileRegex . unpackE
-  regexSource   = packE . reSource
+  makeRegexWith = \o -> compileRegexWith o . unpackR
+  makeRegex     = compileRegex . unpackR
+  regexSource   = packR . reSource
 
 -- $tutorial
 -- We have a regex tutorial at <http://tutorial.regex.uk>. These API

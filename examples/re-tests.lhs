@@ -252,7 +252,7 @@ parsing_tests = testGroup "Parsing"
         pk   = mk_pk mk0
 
         mk_pk :: Replace s' => (s'->IO re') -> String -> s'
-        mk_pk _ = packE
+        mk_pk _ = packR
 \end{code}
 
 <h3>core tests</h3>
@@ -338,8 +338,8 @@ replaceMethodstests = testGroup "Replace"
         "(0:0:(0:1:a) (0:2:bbbb)) (1:0:(1:1:aa) (1:2:b))"
 
     fmt :: (IsString s,Replace s) => a -> Location -> Capture s -> Maybe s
-    fmt _ (Location i j) Capture{..} = Just $ "(" <> packE (show i) <> ":" <>
-      packE (show_co j) <> ":" <> capturedText <> ")"
+    fmt _ (Location i j) Capture{..} = Just $ "(" <> packR (show i) <> ":" <>
+      packR (show_co j) <> ":" <> capturedText <> ")"
 
     show_co (CaptureOrdinal j) = show j
 \end{code}

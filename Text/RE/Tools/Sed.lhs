@@ -60,7 +60,7 @@ sed' :: (IsRegex re a,Monad m,Functor m)
 sed' as lbs = do
   mconcat <$> sequence
     [ applyEdits lno as s
-        | (lno,s)<-zip [firstLine..] $ linesE lbs
+        | (lno,s)<-zip [firstLine..] $ linesR lbs
         ]
 
 read_file :: FilePath -> IO LBS.ByteString

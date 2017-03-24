@@ -55,36 +55,36 @@ import           Text.Regex.TDFA.Text.Lazy()
 
 \begin{code}
 -- | Replace provides the missing methods needed to replace the matched
--- text; lengthE is the minimum implementation
+-- text; lengthR is the minimum implementation
 class (Show a,Eq a,Ord a,Extract a,Monoid a) => Replace a where
   -- | length function for a
-  lengthE        :: a -> Int
+  lengthR        :: a -> Int
   -- | inject String into a
-  packE          :: String -> a
+  packR          :: String -> a
   -- | project a onto a String
-  unpackE        :: a -> String
+  unpackR        :: a -> String
   -- | inject into Text
-  textifyE       :: a -> T.Text
+  textifyR       :: a -> T.Text
   -- | project Text onto a
-  detextifyE     :: T.Text -> a
+  detextifyR     :: T.Text -> a
   -- | split into lines
-  linesE         :: a -> [a]
+  linesR         :: a -> [a]
   -- | concatenate a list of lines
-  unlinesE       :: [a] -> a
+  unlinesR       :: [a] -> a
   -- | append a newline
-  appendNewlineE :: a -> a
+  appendNewlineR :: a -> a
   -- | apply a substitution function to a Capture
-  substE         :: (a->a) -> Capture a -> a
+  substR         :: (a->a) -> Capture a -> a
   -- | convert a template containing $0, $1, etc., in the first
   -- argument, into a 'phi' replacement function for use with
   -- replaceAllCaptures and replaceCaptures
-  parseTemplateE :: a -> Match a -> Location -> Capture a -> Maybe a
+  parseTemplateR :: a -> Match a -> Location -> Capture a -> Maybe a
 
-  textifyE       = T.pack . unpackE
-  detextifyE     = packE  . T.unpack
-  appendNewlineE = (<> packE "\n")
+  textifyR       = T.pack . unpackR
+  detextifyR     = packR  . T.unpack
+  appendNewlineR = (<> packR "\n")
 
-  substE f m@Capture{..} =
+  substR f m@Capture{..} =
     capturePrefix m <> f capturedText <> captureSuffix m
 \end{code}
 
@@ -101,8 +101,8 @@ data ReplaceMethods a =
 replaceMethods :: Replace a => ReplaceMethods a
 replaceMethods =
   ReplaceMethods
-    { methodLength = lengthE
-    , methodSubst  = substE
+    { methodLength = lengthR
+    , methodSubst  = substR
     }
 \end{code}
 
@@ -148,7 +148,7 @@ replaceAll :: Replace a
            => a
            -> Matches a
            -> a
-replaceAll tpl ac = replaceAllCaptures TOP (parseTemplateE tpl) ac
+replaceAll tpl ac = replaceAllCaptures TOP (parseTemplateR tpl) ac
 \end{code}
 
 \begin{code}
@@ -233,7 +233,7 @@ replace :: Replace a
         => a
         -> Match a
         -> a
-replace tpl c = replaceCaptures TOP (parseTemplateE tpl) c
+replace tpl c = replaceCaptures TOP (parseTemplateR tpl) c
 \end{code}
 
 \begin{code}
@@ -320,67 +320,67 @@ replaceCapturesM ReplaceMethods{..} ctx phi_ caps@Match{..} = do
 -- the Replace instances
 
 instance Replace [Char] where
-  lengthE         = length
-  packE           = id
-  unpackE         = id
-  textifyE        = T.pack
-  detextifyE      = T.unpack
-  linesE          = lines
-  unlinesE        = unlines
-  appendNewlineE  = (<>"\n")
-  parseTemplateE  = parseTemplateE' id
+  lengthR         = length
+  packR           = id
+  unpackR         = id
+  textifyR        = T.pack
+  detextifyR      = T.unpack
+  linesR          = lines
+  unlinesR        = unlines
+  appendNewlineR  = (<>"\n")
+  parseTemplateR  = parseTemplateR' id
 
 instance Replace B.ByteString where
-  lengthE         = B.length
-  packE           = B.pack
-  unpackE         = B.unpack
-  textifyE        = TE.decodeUtf8
-  detextifyE      = TE.encodeUtf8
-  linesE          = B.lines
-  unlinesE        = B.unlines
-  appendNewlineE  = (<>"\n")
-  parseTemplateE  = parseTemplateE' B.unpack
+  lengthR         = B.length
+  packR           = B.pack
+  unpackR         = B.unpack
+  textifyR        = TE.decodeUtf8
+  detextifyR      = TE.encodeUtf8
+  linesR          = B.lines
+  unlinesR        = B.unlines
+  appendNewlineR  = (<>"\n")
+  parseTemplateR  = parseTemplateR' B.unpack
 
 instance Replace LBS.ByteString where
-  lengthE         = fromEnum . LBS.length
-  packE           = LBS.pack
-  unpackE         = LBS.unpack
-  textifyE        = TE.decodeUtf8  . LBS.toStrict
-  linesE          = LBS.lines
-  unlinesE        = LBS.unlines
-  detextifyE      = LBS.fromStrict . TE.encodeUtf8
-  appendNewlineE  = (<>"\n")
-  parseTemplateE  = parseTemplateE' LBS.unpack
+  lengthR         = fromEnum . LBS.length
+  packR           = LBS.pack
+  unpackR         = LBS.unpack
+  textifyR        = TE.decodeUtf8  . LBS.toStrict
+  linesR          = LBS.lines
+  unlinesR        = LBS.unlines
+  detextifyR      = LBS.fromStrict . TE.encodeUtf8
+  appendNewlineR  = (<>"\n")
+  parseTemplateR  = parseTemplateR' LBS.unpack
 
 instance Replace (S.Seq Char) where
-  lengthE         = S.length
-  packE           = S.fromList
-  unpackE         = F.toList
-  linesE          = map packE . lines . unpackE
-  unlinesE        = packE . unlines . map unpackE
-  parseTemplateE  = parseTemplateE' F.toList
+  lengthR         = S.length
+  packR           = S.fromList
+  unpackR         = F.toList
+  linesR          = map packR . lines . unpackR
+  unlinesR        = packR . unlines . map unpackR
+  parseTemplateR  = parseTemplateR' F.toList
 
 instance Replace T.Text where
-  lengthE         = T.length
-  packE           = T.pack
-  unpackE         = T.unpack
-  textifyE        = id
-  detextifyE      = id
-  linesE          = T.lines
-  unlinesE        = T.unlines
-  appendNewlineE  = (<>"\n")
-  parseTemplateE  = parseTemplateE' T.unpack
+  lengthR         = T.length
+  packR           = T.pack
+  unpackR         = T.unpack
+  textifyR        = id
+  detextifyR      = id
+  linesR          = T.lines
+  unlinesR        = T.unlines
+  appendNewlineR  = (<>"\n")
+  parseTemplateR  = parseTemplateR' T.unpack
 
 instance Replace LT.Text where
-  lengthE         = fromEnum . LT.length
-  packE           = LT.pack
-  unpackE         = LT.unpack
-  textifyE        = LT.toStrict
-  detextifyE      = LT.fromStrict
-  linesE          = LT.lines
-  unlinesE        = LT.unlines
-  appendNewlineE  = (<>"\n")
-  parseTemplateE  = parseTemplateE' LT.unpack
+  lengthR         = fromEnum . LT.length
+  packR           = LT.pack
+  unpackR         = LT.unpack
+  textifyR        = LT.toStrict
+  detextifyR      = LT.fromStrict
+  linesR          = LT.lines
+  unlinesR        = LT.unlines
+  appendNewlineR  = (<>"\n")
+  parseTemplateR  = parseTemplateR' LT.unpack
 \end{code}
 
 \begin{code}
@@ -426,7 +426,7 @@ lift_phi phi_ = phi
 -- in the third argument (the result of a single match of the RE
 -- against the input text to be matched); Nothing is returned if the
 -- inputs are not well formed (currently all inputs are well formed)
-parseTemplateE' :: ( Replace a
+parseTemplateR' :: ( Replace a
                    , RegexContext Regex a (Matches a)
                    , RegexMaker   Regex CompOption ExecOption String
                    )
@@ -436,7 +436,7 @@ parseTemplateE' :: ( Replace a
                    -> Location
                    -> Capture a
                    -> Maybe a
-parseTemplateE' unpack tpl mtch _ _ =
+parseTemplateR' unpack tpl mtch _ _ =
     Just $ replaceAllCaptures TOP phi $ scan_template tpl
   where
     phi t_mtch _ _ = either Just this $ parse_template_capture unpack t_mtch

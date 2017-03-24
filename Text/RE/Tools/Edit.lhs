@@ -109,9 +109,9 @@ select_edit_scripts :: (IsRegex re s,Monad m,Functor m)
                     -> m s
 select_edit_scripts lno ps0 s = select ps0
   where
-    select []           = return $ appendNewlineE s
+    select []           = return $ appendNewlineR s
     select (edit:edits) =
-      applyEdit appendNewlineE lno edit s >>= maybe (select edits) return
+      applyEdit appendNewlineR lno edit s >>= maybe (select edits) return
 
 pipe_edit_scripts :: (IsRegex re s,Monad m,Functor m)
                   => LineNo
@@ -119,7 +119,7 @@ pipe_edit_scripts :: (IsRegex re s,Monad m,Functor m)
                   -> s
                   -> m s
 pipe_edit_scripts lno edits s0 =
-    appendNewlineE <$> foldr f (return s0) edits
+    appendNewlineR <$> foldr f (return s0) edits
   where
     f edit act = do
       s <- act

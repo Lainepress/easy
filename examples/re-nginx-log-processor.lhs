@@ -571,7 +571,7 @@ newtype User =
   deriving (IsString,Ord,Eq,Show)
 
 parse_user :: Replace a => a -> Maybe User
-parse_user = Just . User . LBS.pack . unpackE
+parse_user = Just . User . LBS.pack . unpackR
 
 
 --
@@ -579,7 +579,7 @@ parse_user = Just . User . LBS.pack . unpackE
 --
 
 parse_pid_tid :: Replace a => a -> Maybe (Int,Int)
-parse_pid_tid x = case allMatches $ unpackE x S.*=~ [re|@{%nat}|] of
+parse_pid_tid x = case allMatches $ unpackR x S.*=~ [re|@{%nat}|] of
     [cs,cs'] -> (,) <$> p cs <*> p cs'
     _        -> Nothing
   where
