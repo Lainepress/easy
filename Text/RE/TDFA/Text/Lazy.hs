@@ -44,6 +44,7 @@ module Text.RE.TDFA.Text.Lazy
   , escape
   , escapeWith
   , module Text.RE.TDFA.RE
+  , module Text.RE.Internal.SearchReplace.TDFA.Text.Lazy
   ) where
 
 import           Prelude.Compat
@@ -52,6 +53,7 @@ import           Data.Typeable
 import           Text.Regex.Base
 import           Text.RE
 import           Text.RE.Internal.AddCaptureNames
+import           Text.RE.Internal.SearchReplace.TDFA.Text.Lazy
 import           Text.RE.SearchReplace
 import           Text.RE.Types.IsRegex
 import           Text.RE.Types.REOptions

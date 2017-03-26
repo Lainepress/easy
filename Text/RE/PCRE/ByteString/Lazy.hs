@@ -44,6 +44,7 @@ module Text.RE.PCRE.ByteString.Lazy
   , escape
   , escapeWith
   , module Text.RE.PCRE.RE
+  , module Text.RE.Internal.SearchReplace.PCRE.ByteString.Lazy
   ) where
 
 import           Prelude.Compat
@@ -52,6 +53,7 @@ import           Data.Typeable
 import           Text.Regex.Base
 import           Text.RE
 import           Text.RE.Internal.AddCaptureNames
+import           Text.RE.Internal.SearchReplace.PCRE.ByteString.Lazy
 import           Text.RE.SearchReplace
 import           Text.RE.Types.IsRegex
 import           Text.RE.Types.REOptions

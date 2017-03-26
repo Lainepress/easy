@@ -49,6 +49,7 @@ two packages:
 - [X] 2017-03-15  v0.7.0.0  [Better organization of API](https://github.com/iconnect/regex/milestone/8)
 - [X] 2017-03-16  v0.8.0.0  [Tidy up the API](https://github.com/iconnect/regex/milestone/10)
 - [X] 2017-03-18  v0.9.0.0  [Finish tidying up the API, Add type-safe replacement templates and exploit TemplateHaskellQuotes](https://github.com/iconnect/regex/milestone/9)
+- [X] 2017-03-18  v0.10.0.0 [Tweak TypeSafe SearchReplace templates](https://github.com/iconnect/regex/milestone/11)
 - [ ] 2017-03-31  v1.0.0.0  [First stable release](https://github.com/iconnect/regex/milestone/3)
 - [ ] 2017-08-31  v2.0.0.0  [Fast text replacement with benchmarks](https://github.com/iconnect/regex/milestone/4)
 
