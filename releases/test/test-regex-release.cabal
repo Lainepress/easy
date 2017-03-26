@@ -1,0 +1,35 @@
+Name:                   test-regex-release
+Version:                0.0.0.1
+Synopsis:               Test regex release
+Description:            A dummy project to check that the released
+                        packages build OK
+Homepage:               http://regex.uk
+Author:                 Chris Dornan
+License:                BSD3
+license-file:           LICENSE
+Maintainer:             Chris Dornan <chris@regex.uk>
+Copyright:              Chris Dornan 2017
+Category:               Text
+Build-type:             Simple
+Stability:              experimental
+
+
+Cabal-Version:          >= 1.10
+
+Executable test-regex-release
+    Hs-Source-Dirs:     src
+
+    Main-Is:            test-regex-release.hs
+
+    Default-Language:   Haskell2010
+
+    GHC-Options:
+      -Wall
+      -fwarn-tabs
+      -Werror
+
+    Build-depends:
+        base                 >= 4 && < 5
+      , regex
+      , regex-with-pcre
+      , regex-examples

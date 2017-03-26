@@ -1,5 +1,8 @@
 -*-change-log-*-
 
+0.10.0.1 Chris Dornan <chris.dornan@irisconnect.co.uk> 2017-03-26
+  * Fix sub-package cabal files (#88)
+
 0.10.0.0 Chris Dornan <chris.dornan@irisconnect.co.uk> 2017-03-25
   * Tweak Type-Safe SearchReplace templates (#86)
   * Add escape methods to IsRegex (#87)

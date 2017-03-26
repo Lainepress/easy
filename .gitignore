@@ -4,7 +4,7 @@
 .ghci
 .hub
 .ghci
-stack.yaml
+/stack.yaml
 README.markdown
 tmp
 

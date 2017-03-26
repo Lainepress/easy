@@ -41,6 +41,7 @@ Library
 
     Other-Modules:
       Text.RE.Internal.QQ
+      Text.RE.Internal.SearchReplace
       Text.RE.Internal.SearchReplace.TDFA
       Text.RE.Internal.SearchReplace.TDFA.ByteString
       Text.RE.Internal.SearchReplace.TDFA.ByteString.Lazy
