@@ -15,7 +15,7 @@ license-file:           LICENSE
 Maintainer:             Chris Dornan <chris@regex.uk>
 Copyright:              Chris Dornan 2016-2017
 Category:               Text
-Build-type:             Simple
+Build-type:             Stable
 Stability:              RFC
 bug-reports:            http://issues.regex.uk
 
