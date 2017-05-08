@@ -26,31 +26,30 @@ module Main
   ) where
 
 import           Control.Applicative
-import           Control.Exception
 import           Control.Monad
 import qualified Data.ByteString.Lazy.Char8               as LBS
-import qualified Data.HashMap.Lazy                        as HML
+import           Data.Char
 import           Data.Functor.Identity
+import qualified Data.HashMap.Lazy                        as HML
 import           Data.Maybe
 import           Data.String
 import qualified Data.Text                                as T
 import           Data.Time
 import           Prelude.Compat
-import qualified Shelly                                   as SH
 import           System.Directory
 import           System.Environment
 import           System.Exit
+import           System.FilePath
 import           System.IO
-import           Text.RE.Tools.Sed
-import           Text.RE.Types.REOptions
-import           Text.RE.TestBench.Parsers
-import           Text.RE.TestBench
+import           TestKit
+import           Text.Printf
+import qualified Text.RE.PCRE                             as PCRE
 import           Text.RE.PCRE.ByteString.Lazy
 import qualified Text.RE.PCRE.String                      as S
-import           Text.RE.Types.Capture
-import           Text.RE.Types.Match
-import           Text.RE.Types.Replace
-import           Text.Printf
+import           Text.RE.REOptions
+import           Text.RE.Replace
+import           Text.RE.TestBench
+import           Text.RE.Tools.Sed
 \end{code}
 
 \begin{code}
@@ -81,7 +80,7 @@ main = do
         , prg " --regex"
         , prg " --regex <macro-id>"
         , prg "[--test]"
-        , prg "(-|<in-file>) [-|<out-fileß>]"
+        , prg "(-|<in-file>) [-|<out-file>]"
         ]
 \end{code}
 
@@ -93,20 +92,26 @@ main = do
 
 test :: IO ()
 test = do
-  putStrLn "============================================================"
-  putStrLn "Testing the macro environment."
-  putStrLn "nginx-log-processor"
-  dumpMacroTable        "nginx-log-processor" regexType lp_env
-  me_ok <- testMacroEnv "nginx-log-processor" regexType lp_env
-  putStrLn "============================================================"
-  putStrLn "Testing the log processor on reference data."
-  putStrLn ""
-  lp_ok <- test_log_processor
-  putStrLn "============================================================"
-  case me_ok && lp_ok of
-    True  -> return ()
-    False -> exitWith $ ExitFailure 1
+    putStrLn "============================================================"
+    putStrLn "Testing the macro environment."
+    putStrLn "nginx-log-processor"
+    is_docs <- doesDirectoryExist "docs"
+    when is_docs $
+      dumpMacroTable  (fp "docs" ".txt") (fp "docs" "-src.txt") regexType lp_env
+    dumpMacroTable    (fp "data" ".txt") (fp "data" "-src.txt") regexType lp_env
+    me_ok <- testMacroEnv "nginx-log-processor" regexType lp_env
+    putStrLn "============================================================"
+    putStrLn "Testing the log processor on reference data."
+    putStrLn ""
+    lp_ok <- test_log_processor
+    putStrLn "============================================================"
+    case me_ok && lp_ok of
+      True  -> return ()
+      False -> exitWith $ ExitFailure 1
+  where
+    fp dir sfx = dir </> (rty_s ++ "-nginx-log-processor" ++ sfx)
 
+    rty_s      = map toLower $ presentRegexType regexType
 
 test_log_processor :: IO Bool
 test_log_processor = do
@@ -148,7 +153,7 @@ process_line :: IsEvent a
              -> (Match LBS.ByteString->Maybe a)
              -> LineNo
              -> Match LBS.ByteString
-             -> Location
+             -> RELocation
              -> Capture LBS.ByteString
              -> IO (Maybe LBS.ByteString)
 process_line ctx src prs lno cs _ _ = do
@@ -269,13 +274,13 @@ instance IsEvent LBS.ByteString where
 -- REOptions and Prelude
 --
 
-lpo :: REOptions
-lpo = makeREOptions lp_prelude
+lpo :: PCRE.REOptions
+lpo = PCRE.makeREOptions lp_prelude
 
 lp_prelude :: Macros RE
 lp_prelude = runIdentity $ mkMacros mk regexType ExclCaptures lp_env
   where
-    mk   = maybe oops Identity . compileRegexWithOptions noPreludeREOptions
+    mk   = maybe oops Identity . PCRE.compileRegexWithOptions PCRE.noPreludeREOptions
 
     oops = error "lp_prelude"
 
@@ -292,7 +297,7 @@ lp_macro_source :: MacroID -> String
 lp_macro_source = formatMacroSource regexType ExclCaptures lp_env
 
 lp_env :: MacroEnv
-lp_env = preludeEnv `HML.union` HML.fromList
+lp_env = PCRE.preludeEnv `HML.union` HML.fromList
     [ f "user"        user_macro
     , f "pid#tid:"    pid_tid_macro
     , f "access"      access_macro
@@ -311,12 +316,12 @@ user_macro :: MacroEnv -> MacroID -> MacroDescriptor
 user_macro env mid =
   runTests regexType parse_user samples env mid
     MacroDescriptor
-      { _md_source          = "(?:-|[^[:space:]]+)"
-      , _md_samples         = map fst samples
-      , _md_counter_samples = counter_samples
-      , _md_test_results    = []
-      , _md_parser          = Just "parse_user"
-      , _md_description     = "a user ident (per RFC1413)"
+      { macroSource          = "(?:-|[^[:space:]]+)"
+      , macroSamples         = map fst samples
+      , macroCounterSamples = counter_samples
+      , macroTestResults    = []
+      , macroParser          = Just "parse_user"
+      , macroDescription     = "a user ident (per RFC1413)"
       }
   where
     samples :: [(String,User)]
@@ -334,12 +339,12 @@ pid_tid_macro :: MacroEnv -> MacroID -> MacroDescriptor
 pid_tid_macro env mid =
   runTests regexType parse_pid_tid samples env mid
     MacroDescriptor
-      { _md_source          = "(?:@{%nat})#(?:@{%nat}):"
-      , _md_samples         = map fst samples
-      , _md_counter_samples = counter_samples
-      , _md_test_results    = []
-      , _md_parser          = Just "parse_pid_tid"
-      , _md_description     = "<PID>#<TID>:"
+      { macroSource          = "(?:@{%nat})#(?:@{%nat}):"
+      , macroSamples         = map fst samples
+      , macroCounterSamples = counter_samples
+      , macroTestResults    = []
+      , macroParser          = Just "parse_pid_tid"
+      , macroDescription     = "<PID>#<TID>:"
       }
   where
     samples :: [(String,(Int,Int))]
@@ -359,12 +364,12 @@ access_macro :: MacroEnv -> MacroID -> MacroDescriptor
 access_macro env mid =
   runTests' regexType (parse_access . fmap LBS.pack) samples env mid
     MacroDescriptor
-      { _md_source          = access_re
-      , _md_samples         = map fst samples
-      , _md_counter_samples = counter_samples
-      , _md_test_results    = []
-      , _md_parser          = Just "parse_a"
-      , _md_description     = "an Nginx access log file line"
+      { macroSource          = access_re
+      , macroSamples         = map fst samples
+      , macroCounterSamples = counter_samples
+      , macroTestResults    = []
+      , macroParser          = Just "parse_a"
+      , macroDescription     = "an Nginx access log file line"
       }
   where
     samples :: [(String,Access)]
@@ -392,12 +397,12 @@ access_deg_macro :: MacroEnv -> MacroID -> MacroDescriptor
 access_deg_macro env mid =
   runTests' regexType (parse_deg_access . fmap LBS.pack) samples env mid
     MacroDescriptor
-      { _md_source          = " -  \\[\\] \"\"   \"\" \"\" \"\""
-      , _md_samples         = map fst samples
-      , _md_counter_samples = counter_samples
-      , _md_test_results    = []
-      , _md_parser          = Nothing
-      , _md_description     = "a degenerate Nginx access log file line"
+      { macroSource          = " -  \\[\\] \"\"   \"\" \"\" \"\""
+      , macroSamples         = map fst samples
+      , macroCounterSamples = counter_samples
+      , macroTestResults    = []
+      , macroParser          = Nothing
+      , macroDescription     = "a degenerate Nginx access log file line"
       }
   where
     samples :: [(String,Access)]
@@ -414,12 +419,12 @@ error_macro :: MacroEnv -> MacroID -> MacroDescriptor
 error_macro env mid =
   runTests' regexType (parse_error . fmap LBS.pack) samples env mid
     MacroDescriptor
-      { _md_source          = error_re
-      , _md_samples         = map fst samples
-      , _md_counter_samples = counter_samples
-      , _md_test_results    = []
-      , _md_parser          = Just "parse_e"
-      , _md_description     = "an Nginx error log file line"
+      { macroSource          = error_re
+      , macroSamples         = map fst samples
+      , macroCounterSamples = counter_samples
+      , macroTestResults    = []
+      , macroParser          = Just "parse_e"
+      , macroDescription     = "an Nginx error log file line"
       }
   where
     samples :: [(String,Error)]
@@ -585,20 +590,6 @@ parse_pid_tid x = case allMatches $ unpackR x S.*=~ [re|@{%nat}|] of
   where
     p cs = matchCapture cs >>= parseInteger . capturedText
 
-
---
--- cmp
---
-
-cmp :: T.Text -> T.Text -> IO Bool
-cmp src dst = handle hdl $ do
-    _ <- SH.shelly $ SH.verbosely $
-        SH.run "cmp" [src,dst]
-    return True
-  where
-    hdl :: SomeException -> IO Bool
-    hdl se = do
-      hPutStrLn stderr $
-        "testing results against model answers failed: " ++ show se
-      return False
+regexType :: RegexType
+regexType = PCRE.regexType
 \end{code}

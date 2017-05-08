@@ -15,25 +15,9 @@ module Text.RE
   -- * How to use this library
   -- $use
 
-  -- ** The Match Operators
-  -- $operators
-
-  -- * Matches
-    Matches
-  , matchesSource
-  , allMatches
-  , anyMatches
-  , countMatches
-  , matches
-  -- * Match
-  , Match
-  , matchSource
-  , matched
-  , matchedText
+  -- * Further Use
+  -- $further
   ) where
-
-import           Text.RE.Types.Match
-import           Text.RE.Types.Matches
 
 -- $tutorial
 --
@@ -41,52 +25,45 @@ import           Text.RE.Types.Matches
 
 -- $use
 --
--- This module just provides an overview of the key type on which
--- the regex package is built. You will need to import one of the API
--- modules of which there is a choice which will depend upon two factors:
+-- This module just provides a brief overview of the regex package. You
+-- will need to import one of the API modules of which there is a choice
+-- which will depend upon two factors:
 --
--- * Which flavour of regular expression do you want to use? If you want
---   Posix flavour REs then you want the TDFA modules, otherwise its
+-- * Which flavour of regular expression do you want to use? If you need
+--   Posix flavour REs then you will want the TDFA modules, otherwise its
 --   PCRE for Perl-style REs.
 --
 -- * What type of text do you want to match: (slow) @String@s, @ByteString@,
 --   @ByteString.Lazy@, @Text@, @Text.Lazy@ or the anachronistic @Seq Char@
---   or indeed a good old-fashioned polymorphic operators?
+--   or indeed some good old-fashioned polymorphic operators?
 --
 -- While we aim to provide all combinations of these choices, some of them
 -- are currently not available.  In the regex package we have:
 --
--- * "Text.RE.TDFA"
 -- * "Text.RE.TDFA.ByteString"
 -- * "Text.RE.TDFA.ByteString.Lazy"
--- * "Text.RE.TDFA.RE"
+-- * "Text.RE.ZeInternals.TDFA"
 -- * "Text.RE.TDFA.Sequence"
 -- * "Text.RE.TDFA.String"
 -- * "Text.RE.TDFA.Text"
 -- * "Text.RE.TDFA.Text.Lazy"
+-- * "Text.RE.TDFA"
 --
 -- The PCRE modules are contained in the separate @regex-with-pcre@
 -- package:
 --
--- * "Text.RE.PCRE"
--- * "Text.RE.PCRE.ByteString"
--- * "Text.RE.PCRE.ByteString.Lazy"
--- * "Text.RE.PCRE.RE"
--- * "Text.RE.PCRE.Sequence"
--- * "Text.RE.PCRE.String"
+-- * Text.RE.PCRE.ByteString
+-- * Text.RE.PCRE.ByteString.Lazy
+-- * Text.RE.ZeInternals.PCRE
+-- * Text.RE.PCRE.Sequence
+-- * Text.RE.PCRE.String
+-- * Text.RE.PCRE
 
--- $operators
+-- $further
+-- For more specialist applications we have the following:
 --
--- The traditional @=~@ and @=~~@ operators are exported by the above
--- API module, but we recommend that you use the two new operators,
--- especially if you are not familiar with the old operators.  We have:
---
--- * @txt ?=~ re@ searches for a single match yielding a value of type
---   'Match' @a@ where @a@ is the type of the text you are searching.
---
--- * @txt *=~ re@ searches for all non-overlapping matches in @txt@,
---   returning a value of type 'Matches' @a@.
---
--- The remainder of this module outlines these @Matches@ and
--- @Match@ result types. Only an outline is given here. For more details
--- see the 'Text.RE.Type.Matches' and 'Text.RE.Type.Match' modules.
+-- * "Text.RE.REOptions" for specifying back-end specific options;
+-- * "Text.RE.Replace"   for the full text-replacement toolkit;
+-- * "Text.RE.TestBench" for building up, testing and doumenting;
+--   macro environments  for use in REs;
+-- * "Text.RE.Tools"     for an AWK-like text-processing toolkit.

@@ -3,14 +3,23 @@ Name:                   regex-with-pcre
 %include "lib/cabal-masters/constraints-incl.cabal"
 Library
     Hs-Source-Dirs:     .
+
     Exposed-Modules:
       Text.RE.PCRE
       Text.RE.PCRE.ByteString
       Text.RE.PCRE.ByteString.Lazy
-      Text.RE.PCRE.RE
       Text.RE.PCRE.Sequence
       Text.RE.PCRE.String
 
-%build-depends-lib base base-compat bytestring containers regex-base regex regex-pcre-builtin template-haskell transformers
+    Other-Modules:
+      Text.RE.ZeInternals.PCRE
+      Text.RE.ZeInternals.SearchReplace.PCRE
+      Text.RE.ZeInternals.SearchReplace.PCRE.ByteString
+      Text.RE.ZeInternals.SearchReplace.PCRE.ByteString.Lazy
+      Text.RE.ZeInternals.SearchReplace.PCRE.Sequence
+      Text.RE.ZeInternals.SearchReplace.PCRE.String
+      Text.RE.ZeInternals.SearchReplace.PCREEdPrime
+
+%build-depends-lib base base-compat bytestring containers regex-base regex regex-pcre-builtin regex-tdfa template-haskell transformers unordered-containers
 
 -- Generated with re-gen-cabals

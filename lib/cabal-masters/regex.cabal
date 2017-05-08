@@ -1,44 +1,8 @@
 Name:                   regex
 %include "lib/cabal-masters/regex-incl.cabal"
 %include "lib/cabal-masters/constraints-incl.cabal"
+%include "lib/cabal-masters/library-incl.cabal" exclude "PCRE"
 
-Library
-    Hs-Source-Dirs:     .
-    Exposed-Modules:
-      Text.RE
-      Text.RE.Internal.AddCaptureNames
-      Text.RE.Internal.EscapeREString
-      Text.RE.Internal.NamedCaptures
-      Text.RE.Internal.PreludeMacros
-      Text.RE.Internal.QQ
-      Text.RE.SearchReplace
-      Text.RE.Summa
-      Text.RE.TDFA
-      Text.RE.TDFA.ByteString
-      Text.RE.TDFA.ByteString.Lazy
-      Text.RE.TDFA.RE
-      Text.RE.TDFA.Sequence
-      Text.RE.TDFA.String
-      Text.RE.TDFA.Text
-      Text.RE.TDFA.Text.Lazy
-      Text.RE.TestBench
-      Text.RE.TestBench.Parsers
-      Text.RE.Tools
-      Text.RE.Tools.Edit
-      Text.RE.Tools.Grep
-      Text.RE.Tools.Lex
-      Text.RE.Tools.Sed
-      Text.RE.Types
-      Text.RE.Types.Capture
-      Text.RE.Types.CaptureID
-      Text.RE.Types.IsRegex
-      Text.RE.Types.LineNo
-      Text.RE.Types.Match
-      Text.RE.Types.Matches
-      Text.RE.Types.REOptions
-      Text.RE.Types.Replace
-      Text.RE.Types.SearchReplace
-
-%build-depends-lib array bytestring base base-compat containers hashable regex-base regex-tdfa regex-tdfa-text template-haskell text time time-locale-compat transformers unordered-containers
+%build-depends-lib array base base-compat bytestring containers hashable regex-base regex-tdfa regex-tdfa-text template-haskell text time time-locale-compat transformers unordered-containers
 
 -- Generated with re-gen-cabals

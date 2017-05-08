@@ -24,9 +24,11 @@ regressions.
 module Main (main) where
 
 import           Control.Exception
+import           Control.Monad
 import           Data.Array
 import qualified Data.ByteString.Char8          as B
 import qualified Data.ByteString.Lazy.Char8     as LBS
+import           Data.Char
 import qualified Data.Foldable                  as F
 import qualified Data.HashMap.Strict            as HM
 import           Data.Maybe
@@ -38,40 +40,36 @@ import qualified Data.Text.Lazy                 as LT
 import           Data.Typeable
 import           Language.Haskell.TH.Quote
 import           Prelude.Compat
+import           System.Directory
+import           System.FilePath
 import           Test.SmallCheck.Series
 import           Test.Tasty
 import           Test.Tasty.HUnit
 import           Test.Tasty.SmallCheck          as SC
+import           TestKit
 import           Text.Heredoc
-import qualified Text.Regex.PCRE                as PCRE_
-import qualified Text.Regex.TDFA                as TDFA_
-import           Text.RE
-import           Text.RE.Internal.AddCaptureNames
-import           Text.RE.Internal.NamedCaptures
-import           Text.RE.Internal.PreludeMacros
 import qualified Text.RE.PCRE                   as PCRE
-import           Text.RE.TDFA                   as TDFA
-import           Text.RE.SearchReplace
-import           Text.RE.TestBench
-import           Text.RE.Tools.Sed
-import           Text.RE.Types.Capture
-import           Text.RE.Types.CaptureID
-import           Text.RE.Types.Match
-import           Text.RE.Types.Matches
-import           Text.RE.Types.REOptions
-import           Text.RE.Types.Replace
-
-import qualified Text.RE.PCRE.String            as P_ST
 import qualified Text.RE.PCRE.ByteString        as P_BS
 import qualified Text.RE.PCRE.ByteString.Lazy   as PLBS
 import qualified Text.RE.PCRE.Sequence          as P_SQ
-
-import qualified Text.RE.TDFA.String            as T_ST
+import qualified Text.RE.PCRE.String            as P_ST
+import           Text.RE.REOptions
+import           Text.RE.Replace
+import           Text.RE.TDFA                   as TDFA
 import qualified Text.RE.TDFA.ByteString        as T_BS
 import qualified Text.RE.TDFA.ByteString.Lazy   as TLBS
 import qualified Text.RE.TDFA.Sequence          as T_SQ
+import qualified Text.RE.TDFA.String            as T_ST
 import qualified Text.RE.TDFA.Text              as T_TX
 import qualified Text.RE.TDFA.Text.Lazy         as TLTX
+import           Text.RE.TestBench
+import           Text.RE.Tools.Find
+import           Text.RE.Tools.Sed
+import           Text.RE.ZeInternals
+import qualified Text.Regex.PCRE                as PCRE_
+import qualified Text.Regex.TDFA                as TDFA_
+
+
 \end{code}
 
 
@@ -89,6 +87,7 @@ main = defaultMain $
     , many_tests
     , escape_tests
     , add_capture_names_tests
+    , find_tests
     , misc_tests
     ]
 \end{code}
@@ -104,8 +103,15 @@ prelude_tests = testGroup "Prelude"
   where
     tc rty m_env =
       testCase (show rty) $ do
-        dumpMacroTable "macros" rty m_env
+        is_docs <- doesDirectoryExist "docs"
+        when is_docs $
+          dumpMacroTable (fp "docs" ".txt") (fp "docs" "-src.txt") rty m_env
+        dumpMacroTable   (fp "data" ".txt") (fp "data" "-src.txt") rty m_env
         assertBool "testMacroEnv" =<< testMacroEnv "prelude" rty m_env
+      where
+        fp dir sfx = dir </> (rty_s ++ "-macros" ++ sfx)
+
+        rty_s      = map toLower $ presentRegexType rty
 \end{code}
 
 
@@ -240,12 +246,17 @@ compiling_tests = testGroup "Compiling"
             assertEqual "RE" re_s $ regexSource r
         , testCase "Match" $ do
             r <- mk' re_s
-            assertEqual "Match" (pk <$> regex_str_match) $ matchOnce r $ pk str_
+            assertEqual "Match"  (pk <$> regex_str_match) $ matchOnce r $ pk str_
+        , testCase "Escape" $ do
+            r <- esc $ pk "foobar"
+            assertEqual "String" (pk "bar") $ matchSource $ matchOnce r $ pk "bar"
         ]
       where
         mk   = makeRegex              `asTypeOf` mk0
 
         mk'  = makeRegexWith minBound `asTypeOf` mk0
+
+        esc  = makeEscaped id         `asTypeOf` mk0
 
         re_s = pk $ reSource regex_
 
@@ -315,7 +326,7 @@ replace_methods_tests = testGroup "Replace"
       chk r
   , testCase "Seq Char" $ do
       let ms = S.fromList str_ =~ regex_ :: Matches (S.Seq Char)
-          f  = \_ (Location i j) Capture{..} -> Just $ S.fromList $
+          f  = \_ (RELocation i j) Capture{..} -> Just $ S.fromList $
                   "(" <> show i <> ":" <> show_co j <> ":" <>
                     F.toList capturedText <> ")"
           r  = replaceAllCaptures ALL f ms
@@ -337,8 +348,8 @@ replace_methods_tests = testGroup "Replace"
         r
         "(0:0:(0:1:a) (0:2:bbbb)) (1:0:(1:1:aa) (1:2:b))"
 
-    fmt :: (IsString s,Replace s) => a -> Location -> Capture s -> Maybe s
-    fmt _ (Location i j) Capture{..} = Just $ "(" <> packR (show i) <> ":" <>
+    fmt :: (IsString s,Replace s) => a -> RELocation -> Capture s -> Maybe s
+    fmt _ (RELocation i j) Capture{..} = Just $ "(" <> packR (show i) <> ":" <>
       packR (show_co j) <> ":" <> capturedText <> ")"
 
     show_co (CaptureOrdinal j) = show j
@@ -350,7 +361,9 @@ replace_methods_tests = testGroup "Replace"
 \begin{code}
 search_replace_tests :: TestTree
 search_replace_tests = testGroup "SearchReplace"
-    [ testCase "TDFA.ed/String" $ test  id         tdfa_eds
+    [ testCase "?=~/ [ed_| ... |]" $ "baz bar foobar" @=? "foo bar foobar" T_ST.?=~/ [ed_|foo///baz|] ()
+    , testCase "*=~/ [ed_| ... |]" $ "baz bar bazbar" @=? "foo bar foobar" T_ST.*=~/ [ed_|foo///baz|] MultilineSensitive
+    , testCase "TDFA.ed/String" $ test  id         tdfa_eds
     , testCase "PCRE.ed/String" $ test  id         pcre_eds
     , testCase "TDFA.ed/B"      $ test  B.pack     tdfa_eds
     , testCase "PCRE.ed/B"      $ test  B.pack     pcre_eds
@@ -574,14 +587,14 @@ Named Capture Tests
 named_capture_tests :: TestTree
 named_capture_tests = localOption (SmallCheckDepth 4) $
   testGroup "NamedCaptures"
-    [ formatScanTestTree
-    , analyseTokensTestTree
+    [ format_scan_tests
+    , analyse_tokens_tests
     ]
 
 instance Monad m => Serial m Token
 
-formatScanTestTree :: TestTree
-formatScanTestTree =
+format_scan_tests :: TestTree
+format_scan_tests =
   testGroup "FormatToken/Scan Properties"
     [ localOption (SmallCheckDepth 4) $
         SC.testProperty "formatTokens == formatTokens0" $
@@ -592,8 +605,8 @@ formatScanTestTree =
                     scan (formatTokens' idFormatTokenREOptions tks) == tks
     ]
 
-analyseTokensTestTree :: TestTree
-analyseTokensTestTree =
+analyse_tokens_tests :: TestTree
+analyse_tokens_tests =
   testGroup "Analysing [Token] Unit Tests"
     [ tc [here|foobar|]                                       []
     , tc [here||]                                             []
@@ -621,7 +634,7 @@ analyseTokensTestTree =
 
     xnc = either oops (snd . fst) . extractNamedCaptures
       where
-        oops = error "analyseTokensTestTree: unexpected parse failure"
+        oops = error "analyse_tokens_tests: unexpected parse failure"
 \end{code}
 
 
@@ -666,6 +679,45 @@ test_add_capture_name lab tst x = testCase lab $
 \end{code}
 
 
+The Find Tests
+--------------
+
+\begin{code}
+find_tests :: TestTree
+find_tests = testGroup "Find Tests"
+    [ testCase "examples/" $ do
+        fps <- findMatches_ findMethods [re|^re-.*\.lhs|] "examples/"
+        example_paths @=? filter (not . matched . (?=~ [re|master\.lhs|])) fps
+    ]
+
+example_paths :: [String]
+example_paths =
+  [ "examples/re-gen-cabals.lhs"
+  , "examples/re-gen-modules.lhs"
+  , "examples/re-include.lhs"
+  , "examples/re-nginx-log-processor.lhs"
+  , "examples/re-prep.lhs"
+  , "examples/re-sort-imports.lhs"
+  , "examples/re-tests.lhs"
+  , "examples/re-top.lhs"
+  , "examples/re-tutorial-options.lhs"
+  , "examples/re-tutorial-replacing.lhs"
+  , "examples/re-tutorial-testbench.lhs"
+  , "examples/re-tutorial-tools.lhs"
+  , "examples/re-tutorial.lhs"
+  ]
+
+findMethods :: FindMethods String
+findMethods =
+  FindMethods
+    { doesDirectoryExistDM = doesDirectoryExist
+    , listDirectoryDM      = getDirectoryContents
+    , combineDM            = (</>)
+    }
+
+\end{code}
+
+
 The Miscelaneous Tests
 ----------------------
 
@@ -674,7 +726,7 @@ misc_tests :: TestTree
 misc_tests = testGroup "Miscelaneous Tests"
     [ testGroup "CaptureID"
         [ testCase "CaptureID lookup failure" $ do
-            ok <- isValidError $ findCaptureID [cp|foo|] $ reCaptureNames [re|foo|]
+            ok <- isValidError $ unsafe_find_capture_id [cp|foo|] $ reCaptureNames [re|foo|]
             assertBool "failed" ok
         ]
     , testGroup "QQ"
@@ -788,8 +840,8 @@ misc_tests = testGroup "Miscelaneous Tests"
     tdfa_re   = fromMaybe oops $ TDFA.compileRegexWithOptions tdfa_opts ".*"
     pcre_re   = fromMaybe oops $ PCRE.compileRegexWithOptions pcre_opts ".*"
 
-    tdfa_opts = makeREOptions no_macs_t :: REOptions_ TDFA.RE TDFA_.CompOption TDFA_.ExecOption
-    pcre_opts = makeREOptions no_macs_p :: REOptions_ PCRE.RE PCRE_.CompOption PCRE_.ExecOption
+    tdfa_opts = TDFA.makeREOptions no_macs_t :: REOptions_ TDFA.RE TDFA_.CompOption TDFA_.ExecOption
+    pcre_opts = PCRE.makeREOptions no_macs_p :: REOptions_ PCRE.RE PCRE_.CompOption PCRE_.ExecOption
 
     no_macs_t = HM.fromList [] :: Macros TDFA.RE
     no_macs_p = HM.fromList [] :: Macros PCRE.RE
@@ -848,6 +900,9 @@ isValidError x = catch (x `seq` return False) hdl
   where
     hdl :: SomeException -> IO Bool
     hdl se = return $ (length $ show se) `seq` True
+
+unsafe_find_capture_id :: CaptureID -> CaptureNames -> CaptureOrdinal
+unsafe_find_capture_id cid = either error id . findCaptureID cid
 
 un_either :: Either String a -> a
 un_either = either error id

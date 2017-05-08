@@ -1,5 +1,63 @@
 -*-change-log-*-
 
+1.0.0.0 Chris Dornan <chris.dornan@irisconnect.co.uk> 2017-04-10
+  * Rewrite tutorials (#113)
+  * Add Text.RE.Tools.IsRegex (#122)
+  * Include Macro Parsers in Core API (#123)
+  * Adjust type of lookupCaptureID and friends (#124)
+  * re-prep to handle cast example expressions (#125)
+  * Rename compileSearchReplaceWithOptions (#126)
+  * Hide ZeInternals, Evacuate Text.RE (#127)
+  * Proper Haddocks for the quasi quoters (#128)
+  * ed_ quasi quoters are being restricted to SimpleREOptions (#129)
+  * regex dependeny on pcre-builtin (#130)
+
+0.14.0.0 Chris Dornan <chris.dornan@irisconnect.co.uk> 2017-04-05
+  * Move IsOption into the back ends (#115)
+  * Rename Find functions (#116)
+  * re-gen-cabals: 'sdist' to prepare final commit message (#117)
+  * re-prep: 'blog-badge' to update the blog badge (#118)
+  * re-prep: include_code_pp for all .lhs files (#119)
+  * re-gen-cabals: do 'gen' after 'bump-version' (#120)
+
+0.13.0.0 Chris Dornan <chris.dornan@irisconnect.co.uk> 2017-04-03
+  * Add a Find Tool (#106)
+  * TestBench to export Text.RE (#107)
+  * Consolidate cabal templates (#108)
+  * Add special tutorials (#109)
+  * Add sort-imports example (#110)
+  * Generalise Grep (#111)
+  * Tighten up findCaptureID (#112)
+
+0.12.0.0 Chris Dornan <chris.dornan@irisconnect.co.uk> 2017-03-31
+  * Add Text.RE.REOptions to RE.Summa (#103)
+  * Move IsRegex into Text.RE (#104)
+
+0.11.1.0 Chris Dornan <chris.dornan@irisconnect.co.uk> 2017-03-30
+  * Cannot hide Text.RE.ZeInternals.SearchReaplace modules (#101)
+
+0.11.0.0 Chris Dornan <chris.dornan@irisconnect.co.uk> 2017-03-29
+  * Simplify API (#97)
+  * Rename Location to RELocation (#98)
+  * Rename the MacrosDescriptor Fields #99
+
+0.10.0.3 Chris Dornan <chris.dornan@irisconnect.co.uk> 2017-03-28
+  * Update to LTS-8.6 (#95)
+  * Improve Haddocks for Text.RE.{TDFA,PCRE} (#94)
+
+0.10.0.2 Chris Dornan <chris.dornan@irisconnect.co.uk> 2017-03-27
+  * Constrain the types of the template quasi quoters (#86)
+  * Add escape methods to IsRegex (#87)
+  * Better Haddock Commentary (#90)
+  * Better release-testing scripts (#91)
+  * Make travis stack-release tests advisory (#92)
+
+0.10.0.1 Chris Dornan <chris.dornan@irisconnect.co.uk> 2017-03-26
+  Withdrawn
+
+0.10.0.0 Chris Dornan <chris.dornan@irisconnect.co.uk> 2017-03-25
+  Withdrawn
+
 0.9.0.0 Chris Dornan <chris.dornan@irisconnect.co.uk> 2017-03-23
   * Flip the order of the arguments to replace (#78)
   * Add type-safe replacement templates (#60)
@@ -25,7 +83,7 @@
   * Fix .travis.yml release-stack script (#67)
 
 0.6.0.0 Chris Dornan <chris.dornan@irisconnect.co.uk> 2017-03-13
-  * Split out rexex-with-pcre package (#65)
+  * Split out regex-with-pcre package (#65)
 
 0.5.0.0 Chris Dornan <chris.dornan@irisconnect.co.uk> 2017-03-05
   * Fix inter-operation of =~ & =~~ and named captures (#55)

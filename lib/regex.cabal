@@ -1,12 +1,13 @@
 Name:                   regex
-Version:                0.9.0.0
+Version:                1.0.0.0
 Synopsis:               Toolkit for regex-base
-Description:            A Regular Expression Toolkit for regex-base with
-                        Compile-time checking of RE syntax, data types for
+Description:            A regular expression toolkit for regex-base with
+                        compile-time checking of RE syntax, data types for
                         matches and captures, a text replacement toolkit,
                         portable options, high-level AWK-like tools
                         for building text processing apps, regular expression
-                        macros and test bench, a tutorial and copious examples.
+                        macros with parsers and test bench, omprehensive
+                        documentation, tutorials and copious examples.
 Homepage:               http://regex.uk
 Author:                 Chris Dornan
 License:                BSD3
@@ -15,7 +16,7 @@ Maintainer:             Chris Dornan <chris@regex.uk>
 Copyright:              Chris Dornan 2016-2017
 Category:               Text
 Build-type:             Simple
-Stability:              RFC
+Stability:              Stable
 bug-reports:            http://issues.regex.uk
 
 Extra-Source-Files:
@@ -31,8 +32,7 @@ Source-Repository head
 Source-Repository this
     Type:               git
     Location:           https://github.com/iconnect/regex.git
-    Tag:                0.9.0.0
-
+    Tag:                1.0.0.0
 
 
 
@@ -40,17 +40,12 @@ Library
     Hs-Source-Dirs:     .
     Exposed-Modules:
       Text.RE
-      Text.RE.Internal.AddCaptureNames
-      Text.RE.Internal.EscapeREString
-      Text.RE.Internal.NamedCaptures
-      Text.RE.Internal.PreludeMacros
-      Text.RE.Internal.QQ
-      Text.RE.SearchReplace
+      Text.RE.REOptions
+      Text.RE.Replace
       Text.RE.Summa
       Text.RE.TDFA
       Text.RE.TDFA.ByteString
       Text.RE.TDFA.ByteString.Lazy
-      Text.RE.TDFA.RE
       Text.RE.TDFA.Sequence
       Text.RE.TDFA.String
       Text.RE.TDFA.Text
@@ -59,19 +54,41 @@ Library
       Text.RE.TestBench.Parsers
       Text.RE.Tools
       Text.RE.Tools.Edit
+      Text.RE.Tools.Find
       Text.RE.Tools.Grep
+      Text.RE.Tools.IsRegex
       Text.RE.Tools.Lex
       Text.RE.Tools.Sed
-      Text.RE.Types
-      Text.RE.Types.Capture
-      Text.RE.Types.CaptureID
-      Text.RE.Types.IsRegex
-      Text.RE.Types.LineNo
-      Text.RE.Types.Match
-      Text.RE.Types.Matches
-      Text.RE.Types.REOptions
-      Text.RE.Types.Replace
-      Text.RE.Types.SearchReplace
+      Text.RE.ZeInternals
+
+    Other-Modules:
+      Text.RE.ZeInternals.AddCaptureNames
+      Text.RE.ZeInternals.EscapeREString
+      Text.RE.ZeInternals.NamedCaptures
+      Text.RE.ZeInternals.PreludeMacros
+      Text.RE.ZeInternals.QQ
+      Text.RE.ZeInternals.Replace
+      Text.RE.ZeInternals.SearchReplace
+      Text.RE.ZeInternals.SearchReplace.TDFA
+      Text.RE.ZeInternals.SearchReplace.TDFA.ByteString
+      Text.RE.ZeInternals.SearchReplace.TDFA.ByteString.Lazy
+      Text.RE.ZeInternals.SearchReplace.TDFA.Sequence
+      Text.RE.ZeInternals.SearchReplace.TDFA.String
+      Text.RE.ZeInternals.SearchReplace.TDFA.Text
+      Text.RE.ZeInternals.SearchReplace.TDFA.Text.Lazy
+      Text.RE.ZeInternals.SearchReplace.TDFAEdPrime
+      Text.RE.ZeInternals.TDFA
+      Text.RE.ZeInternals.TestBench
+      Text.RE.ZeInternals.TestBench.Parsers
+      Text.RE.ZeInternals.Tools.Lex
+      Text.RE.ZeInternals.Types.Capture
+      Text.RE.ZeInternals.Types.CaptureID
+      Text.RE.ZeInternals.Types.IsRegex
+      Text.RE.ZeInternals.Types.LineNo
+      Text.RE.ZeInternals.Types.Match
+      Text.RE.ZeInternals.Types.Matches
+      Text.RE.ZeInternals.Types.SearchReplace
+
 
     Default-Language:   Haskell2010
 

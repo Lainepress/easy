@@ -1,13 +1,14 @@
 # regex
 
+docs
 .hub
 .ghci
 .hub
 .ghci
-stack.yaml
+/stack.yaml
 README.markdown
 tmp
-
+/releases/test-regex-examples
 
 # Haskell
 

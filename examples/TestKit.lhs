@@ -17,20 +17,29 @@ module TestKit
   , substVersion
   , substVersion_
   , readCurrentVersion
-  , Test
-  , runTests
+  , Test(..)
+  , runTheTests
   , checkThis
+  , checkThisWith
+  , convertMaybeTextList
+  , castInt
+  , packLBS
   , test_pp
   , include
   , cmp
+  , dumpMacroTable
+  , sortImports
+  , read_file
+  , write_file
   ) where
 
 import           Control.Applicative
 import           Control.Exception
 import qualified Control.Monad                            as M
+import qualified Data.ByteString.Lazy.Char8               as LBS
+import qualified Data.List                                as L
 import           Data.Maybe
 import qualified Data.Text                                as T
-import qualified Data.ByteString.Lazy.Char8               as LBS
 import           Prelude.Compat
 import qualified Shelly                                   as SH
 import           System.Directory
@@ -38,12 +47,11 @@ import           System.Environment
 import           System.Exit
 import           System.IO
 import           Text.Printf
+import           Text.RE.Replace
 import           Text.RE.TDFA
-import           Text.RE.TestBench.Parsers
+import           Text.RE.TestBench
 import           Text.RE.Tools.Grep
 import           Text.RE.Tools.Sed
-import           Text.RE.Types.Match
-import           Text.RE.Types.Replace
 \end{code}
 
 
@@ -119,8 +127,8 @@ data Test =
     }
   deriving (Show)
 
-runTests :: [Test] -> IO ()
-runTests tests = do
+runTheTests :: [Test] -> IO ()
+runTheTests tests = do
   as <- getArgs
   case as of
     [] -> return ()
@@ -136,13 +144,27 @@ runTests tests = do
       exitWith $ ExitFailure 1
 
 checkThis :: (Show a,Eq a) => String -> a -> a -> Test
-checkThis lab ref val =
+checkThis = checkThisWith id
+
+checkThisWith :: (Show a,Eq a) => (b->a) -> String -> b -> a -> Test
+checkThisWith f lab ref0 val =
   Test
     { testLabel    = lab
     , testExpected = show ref
     , testResult   = show val
     , testPassed   = ref == val
     }
+  where
+    ref = f ref0
+
+convertMaybeTextList :: [Maybe String] -> [Maybe T.Text]
+convertMaybeTextList = map $ fmap T.pack
+
+castInt :: Int -> Int
+castInt = id
+
+packLBS :: String -> LBS.ByteString
+packLBS = LBS.pack
 
 present_test :: Test -> String
 present_test Test{..} = unlines
@@ -177,15 +199,41 @@ simple include processor
 ------------------------
 
 \begin{code}
+-- | this function looks for lines of the form
+--
+--    `%include <file> [exclude <RE>]`
+--
+-- and replaces them with the contents of the named file, optionally
+-- excluding any lines that match the given RE.
 include :: LBS.ByteString -> IO LBS.ByteString
 include = sed' $ Select
-    [ Function [re|^%include ${file}(@{%string})$|] TOP   incl
-    , Function [re|^.*$|]                           TOP $ \_ _ _ _->return Nothing
+    [ Function [re|^%include ${file}(@{%string})$|]                              TOP incl
+    , Function [re|^%include ${file}(@{%string}) *exclude *${rex}(@{%string})$|] TOP incl
+    , Function [re|^.*$|]                                                        TOP nop
     ]
   where
-    incl _ mtch _ _ = Just <$> LBS.readFile (prs_s $ mtch !$$ [cp|file|])
-    prs_s           = maybe (error "include") T.unpack . parseString
+    incl _ mtch _ _ = include' mtch
+    nop  _ _    _ _ = return Nothing
+
+-- | processes the match from a '%include' line, analyses the match,
+-- fetches the file, optionally excludes lines specified by an RE,
+-- returning the text to include.
+include' :: Match LBS.ByteString -> IO (Maybe LBS.ByteString)
+include' mtch = do
+    ftr <- case prs_s <$> mtch !$$? [cp|rex|] of
+      Nothing     -> return id
+      Just re_lbs -> excl <$> makeRegex re_lbs
+    Just . ftr <$> LBS.readFile (prs_s $ mtch !$$ [cp|file|])
+  where
+    excl :: RE -> LBS.ByteString -> LBS.ByteString
+    excl rex =
+        LBS.unlines . map (matchesSource . getLineMatches)
+          . filter (not . anyMatches . getLineMatches)
+          . grepFilter rex
+
+    prs_s  = maybe (error "include'") T.unpack . parseString
 \end{code}
+
 
 cmp
 ---
@@ -202,4 +250,59 @@ cmp src dst = handle hdl $ do
       hPutStrLn stderr $
         "testing results against model answers failed: " ++ show se
       return False
+\end{code}
+
+
+dumpMacroTable
+--------------
+
+\begin{code}
+-- | dump a MacroEnv into the docs directory
+dumpMacroTable :: FilePath
+               -> FilePath
+               -> RegexType
+               -> MacroEnv
+               -> IO ()
+dumpMacroTable fp_t fp_s rty m_env = do
+  writeFile fp_t $ formatMacroTable   rty              m_env
+  writeFile fp_s $ formatMacroSources rty ExclCaptures m_env
+\end{code}
+
+
+sortImports
+-----------
+
+\begin{code}
+sortImports :: LBS.ByteString -> LBS.ByteString
+sortImports lbs =
+    LBS.unlines $ map (matchesSource . getLineMatches) $
+      hdr ++ L.sortBy cMp bdy
+  where
+    cMp ln1 ln2 = case (extr ln1,extr ln2) of
+        (Nothing,Nothing) -> EQ
+        (Nothing,Just _ ) -> GT
+        (Just _ ,Nothing) -> LT
+        (Just x ,Just  y) -> compare x y
+
+    extr Line{..} = case allMatches getLineMatches of
+      mtch:_  -> mtch !$$? [cp|mod|]
+      _       -> Nothing
+
+    (hdr,bdy) = span (not . anyMatches . getLineMatches) lns
+    lns       = grepFilter rex lbs
+    rex       = [re|^import +(qualified|         ) ${mod}([^ ].*)$|]
+\end{code}
+
+
+read_file and write_file
+------------------------
+
+\begin{code}
+read_file :: FilePath -> IO LBS.ByteString
+read_file "-" = LBS.getContents
+read_file fp  = LBS.readFile fp
+
+write_file :: FilePath -> LBS.ByteString ->IO ()
+write_file "-" = LBS.putStr
+write_file fp  = LBS.writeFile fp
 \end{code}

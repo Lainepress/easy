@@ -31,14 +31,11 @@ import qualified Data.Text                                as T
 import           Prelude.Compat
 import           System.Environment
 import           TestKit
-import           Text.RE.Tools.Edit
+import           Text.RE.Replace
 import           Text.RE.TDFA.ByteString.Lazy
-import           Text.RE.TestBench.Parsers
+import           Text.RE.Tools.Edit
 import           Text.RE.Tools.Grep
 import           Text.RE.Tools.Sed
-import           Text.RE.Types.Capture
-import           Text.RE.Types.Match
-import           Text.RE.Types.Replace
 \end{code}
 
 \begin{code}
@@ -78,7 +75,7 @@ loop =
 \begin{code}
 include_file :: LineNo
              -> Match LBS.ByteString
-             -> Location
+             -> RELocation
              -> Capture LBS.ByteString
              -> IO (Maybe LBS.ByteString)
 include_file _ mtch _ _ = fmap Just $
@@ -136,7 +133,7 @@ data Token = Bra LineNo | Hit | Ket LineNo   deriving (Show)
 
 \begin{code}
 scan :: RE -> [LBS.ByteString] -> [Token]
-scan rex = grepScript
+scan rex = grepWithScript
     [ (,) [re|\\begin\{code\}|] $ \i -> chk $ Bra i
     , (,) rex                   $ \_ -> chk   Hit
     , (,) [re|\\end\{code\}|]   $ \i -> chk $ Ket i

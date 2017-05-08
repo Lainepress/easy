@@ -23,28 +23,27 @@ module Main
   ) where
 
 import           Control.Applicative
+import qualified Data.ByteString.Char8                    as B
 import qualified Data.ByteString.Lazy.Char8               as LBS
 import           Data.IORef
+import qualified Data.List                                as L
 import           Data.Maybe
 import           Data.Monoid
 import qualified Data.Text                                as T
-import qualified Data.Text.Encoding                       as TE
 import           Network.HTTP.Conduit
 import           Prelude.Compat
 import qualified Shelly                                   as SH
 import           System.Directory
 import           System.Environment
+import           System.FilePath
 import           System.IO
 import           TestKit
 import           Text.Heredoc
-import           Text.RE.TestBench.Parsers
+import           Text.RE.Replace
+import           Text.RE.TDFA.ByteString.Lazy
+import qualified Text.RE.TDFA.String                      as TS
 import           Text.RE.Tools.Grep
 import           Text.RE.Tools.Sed
-import           Text.RE.TDFA.ByteString.Lazy
-import qualified Text.RE.TDFA.Text                        as TT
-import           Text.RE.Types.Capture
-import           Text.RE.Types.Match
-import           Text.RE.Types.Replace
 \end{code}
 
 \begin{code}
@@ -57,15 +56,15 @@ main = do
     ["doc",fn,fn'] | is_file fn -> doc fn fn'
     ["gen",fn,fn'] | is_file fn -> gen fn fn'
     ["badges"]                  -> badges
-    ["bump-version",vrn]        -> bumpVersion vrn
+    ["blog-badge"]              -> blog_badge
     ["pages"]                   -> pages
     ["all"]                     -> gen_all
     _                           -> usage
   where
     is_file = not . (== "--") . take 2
 
-    doc fn fn' =                    prep_tut Doc fn fn'
-    gen fn fn' = genMode >>= \gm -> prep_tut gm  fn fn'
+    doc fn fn' =                    prepare_tutorial Doc fn fn'
+    gen fn fn' = genMode >>= \gm -> prepare_tutorial gm  fn fn'
 
     usage = do
       pnm <- getProgName
@@ -75,7 +74,7 @@ main = do
         , prg "--help"
         , prg "[test]"
         , prg "badges"
-        , prg "bump-version <version>"
+        , prg "blog-badge"
         , prg "pages"
         , prg "all"
         , prg "doc (-|<in-file>) (-|<out-file>)"
@@ -84,8 +83,73 @@ main = do
 \end{code}
 
 
-The Sed Script
---------------
+Script to Generate the Whole Web Site
+-------------------------------------
+
+\begin{code}
+gen_all :: IO ()
+gen_all = do
+    -- prepare HTML docs for the (literate) tools
+    pd "re-gen-cabals"
+    pd "re-gen-modules"
+    pd "re-include"
+    pd "re-nginx-log-processor"
+    pd "re-prep"
+    pd "re-sort-imports"
+    pd "re-top"
+    pd "re-tests"
+    pd "TestKit"
+    pd "RE/REOptions"
+    pd "RE/Tools/Edit"
+    pd "RE/Tools/Grep"
+    pd "RE/Tools/Sed"
+    pd "RE/ZeInternals/NamedCaptures"
+    pd "RE/ZeInternals/Replace"
+    pd "RE/ZeInternals/TestBench"
+    pd "RE/ZeInternals/Tools/Lex"
+    pd "RE/ZeInternals/Types/IsRegex"
+    pd "RE/ZeInternals/Types/Matches"
+    pd "RE/ZeInternals/Types/Match"
+    pd "RE/ZeInternals/Types/Capture"
+    -- render the tutorial in HTML
+    createDirectoryIfMissing False "tmp"
+    gen_tutorial "tutorial"
+    gen_tutorial "tutorial-options"
+    gen_tutorial "tutorial-replacing"
+    gen_tutorial "tutorial-testbench"
+    gen_tutorial "tutorial-tools"
+    pages
+  where
+    pd fnm = case (mtch !$$? [cp|fdr|],mtch !$$? [cp|mnm|]) of
+        (Nothing ,Just mnm) -> pandoc_lhs ("Text.RE."          ++mnm) ("Text/"    ++fnm++".lhs") ("docs/"++mnm++".html")
+        (Just fdr,Just mnm) -> pandoc_lhs ("Text.RE."++fdr++"."++mnm) ("Text/"    ++fnm++".lhs") ("docs/"++mnm++".html")
+        _                   -> pandoc_lhs ("examples/"++fnm++".lhs" ) ("examples/"++fnm++".lhs") ("docs/"++fnm++".html")
+      where
+        mtch = fnm TS.?=~ [re|^RE/(${fdr}([a-zA-Z/]+)/)?${mnm}(@{%id})|]
+\end{code}
+
+
+\begin{code}
+gen_tutorial :: String -> IO ()
+gen_tutorial nm = do
+    prepare_tutorial Doc ("examples" </> mst) ("tmp" </> tgt)
+    pandoc_lhs'       tgt
+      ("examples" </> tgt)
+      ("tmp"      </> tgt)
+      ("docs"     </> htm)
+    -- generate the tutorial-based tests
+    gm <- genMode
+    prepare_tutorial gm ("examples" </> mst) ("examples" </> tgt)
+    putStrLn $ ">> " ++ ("examples" </> tgt)
+  where
+    tgt = "re-" ++ nm ++ ".lhs"
+    htm = "re-" ++ nm ++ ".html"
+    mst = "re-" ++ nm ++ "-master.lhs"
+\end{code}
+
+
+The Tutorial Preprocessor
+-------------------------
 
 \begin{code}
 -- | the MODE determines whether we are generating documentation
@@ -111,127 +175,61 @@ genMode :: IO MODE
 genMode = Gen <$> newIORef []
 \end{code}
 
+\begin{code}
+prepare_tutorial :: MODE -> FilePath -> FilePath -> IO ()
+prepare_tutorial mode fp_in fp_out =
+  LBS.readFile fp_in >>= prep_tutorial_pp mode >>= incld >>=
+    LBS.writeFile fp_out . sortImports
+  where
+    incld = case mode of
+      Doc   -> include_code_pp
+      Gen _ -> return
+\end{code}
 
 \begin{code}
-prep_tut :: MODE -> FilePath -> FilePath -> IO ()
-prep_tut mode =
-  sed $ Select
-    [ Function [re|^%include ${file}(@{%string}) ${rex}(@{%string})$|] TOP $ inclde   mode
-    , LineEdit [re|^%main ${arg}(top|bottom)$|]                            $ main_    mode
-    , Function [re|^${fn}(evalme@{%id}) = checkThis ${arg}(@{%string}) \(${ans}([^)]+)\) \$ *${exp}(.*)$|]
+prep_tutorial_pp :: MODE -> LBS.ByteString -> IO LBS.ByteString
+prep_tutorial_pp mode =
+  sed' $ Select
+    [ LineEdit [re|^%main ${arg}(top|bottom)$|]                            $ main_    mode
+    , LineEdit [re|^import *TestKit$|]                                     $ hide     mode
+    , LineEdit [re|^\{-# OPTIONS_GHC -fno-warn-missing-signatures *#-\}$|] $ hide     mode
+    , Function [re|^${fn}(evalme@{%id}) += +(checkThis|checkThisWith +@{%id}) +${arg}(@{%string}) +\(${ans}([^)]+)\) +\$ +\(${exp}(.*)\)$|]
+                                                                       TOP $ evalme   mode
+    , Function [re|^${fn}(evalme@{%id}) += +(checkThis|checkThisWith +@{%id}) +${arg}(@{%string}) +\(${ans}([^)]+)\) +\$ +${exp}(.*)$|]
                                                                        TOP $ evalme   mode
     , Function [re|^.*$|]                                              TOP $ passthru
     ]
 \end{code}
 
 \begin{code}
-inclde,
-  evalme :: MODE
-         -> LineNo
-         -> Match LBS.ByteString
-         -> Location
-         -> Capture LBS.ByteString
-         -> IO (Maybe LBS.ByteString)
+evalme :: MODE
+       -> LineNo
+       -> Match LBS.ByteString
+       -> RELocation
+       -> Capture LBS.ByteString
+       -> IO (Maybe LBS.ByteString)
+evalme  Doc     = evalmeDoc
+evalme (Gen gs) = evalmeGen  gs
 
 main_ :: MODE
       -> LineNo
       -> Matches LBS.ByteString
       -> IO (LineEdit LBS.ByteString)
-
-inclde  Doc     = includeDoc
-inclde (Gen _ ) = passthru
-
 main_   Doc     = delete
 main_  (Gen gs) = mainGen    gs
 
-evalme  Doc     = evalmeDoc
-evalme (Gen gs) = evalmeGen  gs
-
-passthru :: LineNo
-         -> Match LBS.ByteString
-         -> Location
-         -> Capture LBS.ByteString
-         -> IO (Maybe LBS.ByteString)
-passthru _ _ _ _ = return Nothing
-
-delete :: LineNo
-       -> Matches LBS.ByteString
-       -> IO (LineEdit LBS.ByteString)
-delete _ _ = return Delete
-\end{code}
-
-
-Script to Generate the Whole Web Site
--------------------------------------
-
-\begin{code}
-gen_all :: IO ()
-gen_all = do
-    -- prepare HTML docs for the (literate) tools
-    pd "re-gen-cabals"
-    pd "re-gen-modules"
-    pd "re-include"
-    pd "re-nginx-log-processor"
-    pd "re-prep"
-    pd "re-tests"
-    pd "TestKit"
-    pd "RE/Types/Matches"
-    pd "RE/Types/Match"
-    pd "RE/Types/Capture"
-    pd "RE/Types/IsRegex"
-    pd "RE/Types/REOptions"
-    pd "RE/Types/Replace"
-    pd "RE/TestBench"
-    pd "RE/Tools/Edit"
-    pd "RE/Tools/Grep"
-    pd "RE/Tools/Lex"
-    pd "RE/Tools/Sed"
-    pd "RE/Internal/NamedCaptures"
-    -- render the tutorial in HTML
-    prep_tut Doc "examples/re-tutorial-master.lhs" "tmp/re-tutorial.lhs"
-    createDirectoryIfMissing False "tmp"
-    pandoc_lhs'
-      "re-tutorial.lhs"
-      "examples/re-tutorial.lhs"
-      "tmp/re-tutorial.lhs"
-      "docs/re-tutorial.html"
-    -- generate the tutorial-based tests
-    gm <- genMode
-    prep_tut gm "examples/re-tutorial-master.lhs" "examples/re-tutorial.lhs"
-    putStrLn ">> examples/re-tutorial.lhs"
-    pages
-  where
-    pd fnm = case (mtch !$$? [cp|fdr|],mtch !$$? [cp|mnm|]) of
-        (Nothing ,Just mnm) -> pandoc_lhs ("Text.RE."          <>mnm) ("Text/"    <>fnm<>".lhs") ("docs/"<>mnm<>".html")
-        (Just fdr,Just mnm) -> pandoc_lhs ("Text.RE."<>fdr<>"."<>mnm) ("Text/"    <>fnm<>".lhs") ("docs/"<>mnm<>".html")
-        _                   -> pandoc_lhs ("examples/"<>fnm<>".lhs" ) ("examples/"<>fnm<>".lhs") ("docs/"<>fnm<>".html")
-      where
-        mtch = fnm TT.?=~ [re|^RE/(${fdr}(Internal|PCRE|TDFA|Testbench|Tools|Types)/)?${mnm}(@{%id})|]
-\end{code}
-
-
-Generating the Tutorial
------------------------
-
-\begin{code}
-includeDoc :: LineNo
-           -> Match LBS.ByteString
-           -> Location
-           -> Capture LBS.ByteString
-           -> IO (Maybe LBS.ByteString)
-includeDoc _ mtch _ _ = fmap Just $
-    extract fp =<< compileRegex re_s
-  where
-    fp    = prs_s $ captureText [cp|file|] mtch
-    re_s  = prs_s $ captureText [cp|rex|]  mtch
-
-    prs_s = maybe (error "includeDoc") T.unpack . parseString
+hide :: MODE
+     -> LineNo
+     -> Matches LBS.ByteString
+    -> IO (LineEdit LBS.ByteString)
+hide  Doc    = delete
+hide (Gen _) = passthru_
 \end{code}
 
 \begin{code}
 evalmeDoc :: LineNo
           -> Match LBS.ByteString
-          -> Location
+          -> RELocation
           -> Capture LBS.ByteString
           -> IO (Maybe LBS.ByteString)
 evalmeDoc _ mtch _ _ = return $ Just $ flip replace mtch $ LBS.intercalate "\n"
@@ -240,27 +238,28 @@ evalmeDoc _ mtch _ _ = return $ Just $ flip replace mtch $ LBS.intercalate "\n"
   ]
 \end{code}
 
-
-Generating the Tests
---------------------
-
 \begin{code}
 evalmeGen :: GenState
           -> LineNo
           -> Match LBS.ByteString
-          -> Location
+          -> RELocation
           -> Capture LBS.ByteString
           -> IO (Maybe LBS.ByteString)
 evalmeGen gs _ mtch0 _ _ = Just <$>
     replaceCapturesM replaceMethods ALL f mtch0
   where
-    f mtch loc cap = case locationCapture loc of
-      2 -> do
-          modifyIORef gs (ide:)
-          return $ Just $ LBS.pack $ show ide
-        where
-          ide = LBS.unpack $ captureText [cp|fn|] mtch
-      _ -> return $ Just $ capturedText cap
+    f mtch loc _ =
+      case locationCapture loc == arg_i of
+        True  -> do
+            modifyIORef gs (ide:)
+            return $ Just $ LBS.pack $ show ide
+          where
+            ide = LBS.unpack $ captureText [cp|fn|] mtch
+        False -> return Nothing
+
+    arg_i = either oops id $ findCaptureID [cp|arg|] $ captureNames mtch0
+
+    oops  = error "evalmeGen: confused captures!"
 \end{code}
 
 How are we doing?
@@ -289,7 +288,7 @@ mainGen gs _ mtchs = case allMatches mtchs of
         return $ ReplaceWith $ LBS.unlines $
           [ begin_code
           , "main :: IO ()"
-          , "main = runTests"
+          , "main = runTheTests"
           ] ++ mk_list fns ++
           [ end_code
           ]
@@ -308,10 +307,61 @@ end_code   = "\\"<>"end{code}"
 
 \begin{code}
 mk_list :: [String] -> [LBS.ByteString]
-mk_list []          = ["[]"]
+mk_list []          = ["  []"]
 mk_list (ide0:ides) = f "[" ide0 $ foldr (f ",") ["  ]"] ides
   where
     f pfx ide t = ("  "<>pfx<>" "<>LBS.pack ide) : t
+\end{code}
+
+
+include_code_pp
+---------------
+
+\begin{code}
+include_code_pp :: LBS.ByteString -> IO LBS.ByteString
+include_code_pp =
+  sed' $ Select
+    [ Function [re|^%include ${file}(@{%string}) ${rex}(@{%string})$|] TOP  inc_code
+    , Function [re|^.*$|]                                              TOP  passthru
+    ]
+\end{code}
+
+\begin{code}
+inc_code :: LineNo
+         -> Match LBS.ByteString
+         -> RELocation
+         -> Capture LBS.ByteString
+         -> IO (Maybe LBS.ByteString)
+inc_code _ mtch _ _ = fmap Just $
+    extract fp =<< compileRegex re_s
+  where
+    fp    = prs_s $ captureText [cp|file|] mtch
+    re_s  = prs_s $ captureText [cp|rex|]  mtch
+
+    prs_s = maybe (error "include_code") T.unpack . parseString
+\end{code}
+
+
+passthru and delete actions
+---------------------------
+
+\begin{code}
+passthru :: LineNo
+         -> Match LBS.ByteString
+         -> RELocation
+         -> Capture LBS.ByteString
+         -> IO (Maybe LBS.ByteString)
+passthru _ _ _ _ = return Nothing
+
+passthru_ :: LineNo
+          -> Matches LBS.ByteString
+          -> IO (LineEdit LBS.ByteString)
+passthru_ _ _ = return NoEdit
+
+delete :: LineNo
+       -> Matches LBS.ByteString
+       -> IO (LineEdit LBS.ByteString)
+delete _ _ = return Delete
 \end{code}
 
 
@@ -360,7 +410,7 @@ data Token = Bra LineNo | Hit | Ket LineNo   deriving (Show)
 
 \begin{code}
 scan :: RE -> [LBS.ByteString] -> [Token]
-scan rex = grepScript
+scan rex = grepWithScript
     [ (,) [re|\\begin\{code\}|] $ \i -> chk $ Bra i
     , (,) rex                   $ \_ -> chk   Hit
     , (,) [re|\\end\{code\}|]   $ \i -> chk $ Ket i
@@ -393,6 +443,30 @@ badges = do
       simpleHttp url >>= LBS.writeFile (badge_fn nm)
 
     badge_fn nm = "docs/badges/"++nm++".svg"
+\end{code}
+
+
+blog_badge
+----------
+
+\begin{code}
+blog_badge :: IO ()
+blog_badge = do
+  dts <- L.sortBy (flip compare) . map (take 10) <$>
+            getDirectoryContents "../regex-blog/posts"
+  case dts of
+    []   -> error "No posts found!"
+    dt:_ -> case matched $ dt_lbs ?=~ date_re of
+        False -> error $ "Post date format not recognised: " ++ dt
+        True  -> do
+          putStrLn $ "Latest blog is: " ++ dt
+          lbs <- lbsReadFile badges_file
+          LBS.writeFile badges_file $ replaceAll dt_lbs $ lbs *=~ date_re
+      where
+        dt_lbs      = LBS.pack dt
+  where
+    date_re     = [re|[0-9]{4}-[0-9]{2}-[0-9]{2}|]
+    badges_file = "docs/badges/blog.svg"
 \end{code}
 
 
@@ -435,7 +509,8 @@ page_master_file pg = "lib/md/" ++ page_root pg ++ ".md"
 page_docs_file   pg = "docs/"   ++ page_root pg ++ ".html"
 
 page_address :: Page -> LBS.ByteString
-page_address = LBS.pack . page_root
+page_address PG_reblog = "blog"
+page_address pg        = LBS.pack $ page_root pg
 
 page_title :: Page -> LBS.ByteString
 page_title pg = case pg of
@@ -536,7 +611,7 @@ heading :: MarkdownMode
         -> IORef [Heading]
         -> LineNo
         -> Match LBS.ByteString
-        -> Location
+        -> RELocation
         -> Capture LBS.ByteString
         -> IO (Maybe LBS.ByteString)
 heading mmd rf_t rf_h _ mtch _ _ = do
@@ -648,7 +723,7 @@ task_list :: MarkdownMode               -- ^ what flavour of md are we generatin
           -> Bool                       -- ^ true if this is a checjed line
           -> LineNo                     -- ^ line no of the replacement redex (unused)
           -> Match LBS.ByteString       -- ^ the matched task-list line
-          -> Location                   -- ^ which match and capure (unused)
+          -> RELocation                   -- ^ which match and capure (unused)
           -> Capture LBS.ByteString     -- ^ the capture weare replacing (unsuded)
           -> IO (Maybe LBS.ByteString)  -- ^ the replacement text, or Nothing to indicate no change to this line
 task_list mmd rf chk _ mtch _ _ =
@@ -680,7 +755,7 @@ fin_task_list :: MarkdownMode               -- ^ what flavour of md are we gener
               -> IORef Bool                 -- ^ will contain True iff we have already entered a task list
               -> LineNo                     -- ^ line no of the replacement redex (unused)
               -> Match LBS.ByteString       -- ^ the matched task-list line
-              -> Location                   -- ^ which match and capure (unused)
+              -> RELocation                   -- ^ which match and capure (unused)
               -> Capture LBS.ByteString     -- ^ the capture weare replacing (unsuded)
               -> IO (Maybe LBS.ByteString)  -- ^ the replacement text, or Nothing to indicate no change to this line
 fin_task_list mmd rf_t _ mtch _ _ =
@@ -704,15 +779,16 @@ Literate Haskell Pages
 ----------------------
 
 \begin{code}
-pandoc_lhs :: T.Text -> T.Text -> T.Text -> IO ()
+pandoc_lhs :: String -> String -> String -> IO ()
 pandoc_lhs title in_file = pandoc_lhs' title in_file in_file
 
-pandoc_lhs' :: T.Text -> T.Text -> T.Text -> T.Text -> IO ()
+pandoc_lhs' :: String -> String -> String -> String -> IO ()
 pandoc_lhs' title repo_path in_file out_file = do
+  lbsReadFile in_file >>= include_code_pp >>= LBS.writeFile int_file
   LBS.writeFile "tmp/metadata.markdown"  $
                     LBS.unlines
                       [ "---"
-                      , "title: "<>LBS.fromStrict (TE.encodeUtf8 title)
+                      , "title: "<>LBS.pack title
                       , "---"
                       ]
   LBS.writeFile "tmp/bc.html" bc
@@ -729,9 +805,9 @@ pandoc_lhs' title repo_path in_file out_file = do
         , "-A", "tmp/ft.html"
         , "-c", "lib/lhs-styles.css"
         , "-c", "lib/bs.css"
-        , "-o", out_file
+        , "-o", T.pack out_file
         , "tmp/metadata.markdown"
-        , in_file
+        , T.pack int_file
         ]
   where
     bc = LBS.unlines
@@ -742,7 +818,7 @@ pandoc_lhs' title repo_path in_file out_file = do
       , "  <ol class='breadcrumb'>"
       , "    <li>"<>branding<>"</li>"
       , "    <li><a title='source file' href='" <>
-              repo_url <> "'>" <> (LBS.pack $ T.unpack title) <> "</a></li>"
+              repo_url <> "'>" <> (LBS.pack title) <> "</a></li>"
       , "</ol>"
       , "</div>"
       , "<div class='litcontent'>"
@@ -754,8 +830,10 @@ pandoc_lhs' title repo_path in_file out_file = do
 
     repo_url = LBS.concat
       [ "https://github.com/iconnect/regex/blob/master/"
-      , LBS.pack $ T.unpack repo_path
+      , LBS.pack repo_path
       ]
+
+    int_file = "tmp/pandoc-int.lhs"
 \end{code}
 
 
@@ -814,8 +892,14 @@ testing
 \begin{code}
 test :: IO ()
 test = do
-  test_pp "pp-doc" (prep_tut Doc) "data/pp-test.lhs" "data/pp-result-doc.lhs"
+  test_pp "re-prep doc" (prepare_tutorial Doc) "data/pp-test.lhs" "data/pp-result-doc.lhs"
   gm <- genMode
-  test_pp "pp-gen" (prep_tut gm ) "data/pp-test.lhs" "data/pp-result-gen.lhs"
+  test_pp "re-prep gen" (prepare_tutorial gm ) "data/pp-test.lhs" "data/pp-result-gen.lhs"
   putStrLn "tests passed"
+\end{code}
+
+
+\begin{code}
+lbsReadFile :: FilePath -> IO LBS.ByteString
+lbsReadFile fp = LBS.fromStrict <$> B.readFile fp
 \end{code}
