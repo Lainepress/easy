@@ -410,7 +410,7 @@ search_replace_tests = testGroup "SearchReplace" $
     ]
   where
     not_win32_for_now :: [a] -> [a]
-    not_win32_for_now = case SI.os == "Win32" of
+    not_win32_for_now = case SI.os == "mingw32" of
       True  -> const []
       False -> id
 
